@@ -1,42 +1,54 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Alert } from "@mui/material";
 import type { FormEvent, JSX } from "react";
-import { useState } from "react";
 import Comment from "../../components/Comment";
-import { useApp } from "../../ThemedApp";
+import { queryClient, useApp } from "../../ThemedApp";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import type { Post } from "../../types/post.js";
+import { useParams } from "react-router-dom";
 
-// Comment Item ရဲ့ Props Type သတ်မှတ်ခြင်း
-interface CommentItem {
-  id: number;
-  content: string;
-  name: string;
-}
-
+const api = import.meta.env.VITE_API_URL || "http://localhost:8000";
 export default function Comments(): JSX.Element {
   const { setGlobalMsg } = useApp();
-  const [commentsData, setCommentsData] = useState<CommentItem[]>([
-    {
-      id: 1,
-      content: "Initial post content from Alice",
-      name: "Alice",
-    },
-    {
-      id: 2,
-      content: "A comment from Bob",
-      name: "Bob",
-    },
-    {
-      id: 3,
-      content: "A comment reply from Alice",
-      name: "Alice",
-    },
-  ]);
-  // Dummy Data လေးများကို Type စနစ်တကျဖြင့် သတ်မှတ်ခြင်း
+  const { id } = useParams<{ id: string }>();
 
-  const handleRemove = (id: number | string): void => {
-    // Comment ဖျက်မည့် Logic ကို ဤနေရာတွင် ရေးသားနိုင်ပါသည်
-    setCommentsData(commentsData.filter((comment) => comment.id !== id));
-    setGlobalMsg("Comment removed successfully.");
+  const {
+    isLoading,
+    isError,
+    error,
+    data,
+  }: {
+    isLoading: boolean;
+    isError: boolean;
+    error: Error | null;
+    data: Post | undefined;
+  } = useQuery({
+    queryKey: ["comments"],
+    queryFn: async () => {
+      const response = await fetch(`${api}/api/posts/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch comments");
+      }
+      return response.json();
+    },
+  });
+
+  const deleteComment = async (commentId: number | string): Promise<void> => {
+    const response = await fetch(`${api}/api/comments/${commentId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to remove comment");
+    }
+    return response.json();
   };
+
+  const handleRemove = useMutation({
+    mutationFn: deleteComment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+      setGlobalMsg("Comment removed successfully.");
+    },
+  });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -46,14 +58,22 @@ export default function Comments(): JSX.Element {
 
   return (
     <Box>
+      {isError && (
+        <Box>
+          <Alert severity="warning">{error?.message}</Alert>
+        </Box>
+      )}
+      {isLoading && <Box sx={{ textAlign: "center" }}>Loading...</Box>}
       {/* Comment များကို Array map လုပ်ပြီး ပြသခြင်း */}
-      {commentsData.map((comment) => (
-        <Comment
-          key={comment.id}
-          item={comment}
-          remove={() => handleRemove(comment.id)}
-        />
-      ))}
+      {data &&
+        data.comments?.map((comment) => (
+          <Comment
+            key={comment.id}
+            user={data.user}
+            comment={comment}
+            remove={handleRemove.mutate}
+          />
+        ))}
 
       {/* Comment အသစ်ရေးရန် Form */}
       <form onSubmit={handleSubmit}>

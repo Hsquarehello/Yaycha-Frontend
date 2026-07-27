@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useMemo } from "react";
 import {
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
-} from "@mui/material";
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
 import { deepPurple, grey } from "@mui/material/colors";
 
@@ -39,6 +40,8 @@ type AppContextType = {
   auth: any;
   setAuth: React.Dispatch<React.SetStateAction<any>>;
 };
+
+export const queryClient = new QueryClient();
 
 const AppContext = createContext<AppContextType>({
   showForm: false,
@@ -100,9 +103,22 @@ export default function ThemedApp() {
           auth,
           setAuth,
         }}>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
         <CssBaseline />
       </AppContext.Provider>
     </ThemeProvider>
   );
 }
+
+
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__:
+      import('@tanstack/query-core')
+        .QueryClient
+  }
+}
+
+window.__TANSTACK_QUERY_CLIENT__ = queryClient

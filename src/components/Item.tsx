@@ -1,5 +1,8 @@
 import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
 import type { FormEvent } from "react";
+import {formatRelative} from "date-fns";
+import type { Post } from "../types/post.js";
+
 import {
   Alarm as TimeIcon,
   AccountCircle as UserIcon,
@@ -10,23 +13,17 @@ import { green } from "@mui/material/colors";
 
 import { useNavigate } from "react-router-dom";
 
-interface ItemType {
-  id: number;
-  content: string;
-  name: string;
-}
-
 export default function Item({
   item,
   remove,
 }: {
-  item: ItemType;
+  item: Post;
   remove: (id: number | string) => void;
 }) {
   const navigate = useNavigate();
   return (
     <Card sx={{ mb: 2 }}>
-      <CardContent onClick={() => navigate("/comments/1")}>
+      <CardContent onClick={() => navigate(`/comments/${item.id}`)}>
         <Box
           sx={{
             display: "flex",
@@ -42,7 +39,7 @@ export default function Item({
             }}>
             <TimeIcon sx={{ fontSize: 10 }} color="success" />
             <Typography variant="caption" sx={{ color: green[500] }}>
-              A few second ago
+              {formatRelative(item.created, new Date())}
             </Typography>
           </Box>
           <IconButton
@@ -62,8 +59,8 @@ export default function Item({
             alignItems: "center",
             gap: 1,
           }}>
-          <UserIcon sx={{ fontSize: 12 }} color="info" />
-          <Typography variant="caption">{item.name}</Typography>
+          <UserIcon sx={{ fontSize: 26 }} color="info" />
+          <Typography variant="caption">{item.user?.name}</Typography>
         </Box>
       </CardContent>
     </Card>

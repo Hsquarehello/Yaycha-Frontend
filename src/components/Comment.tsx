@@ -10,23 +10,22 @@ import {
 } from "@mui/material";
 
 import { Alarm as TimeIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {formatRelative} from "date-fns";
 
 import { blue, green } from "@mui/material/colors";
-
-interface ItemType {
-  id: number;
-  content: string;
-  name: string;
-}
+import type { Comment } from "../types/comment.js";
+import type { User } from "../types/user.js";
 
 export default function Comment({
-  item,
+  comment,
+  user,
   remove,
 }: {
-  item: ItemType;
+  comment: Comment;
+  user?: User | undefined;
   remove: (id: number | string) => void;
 }) {
-  const initials = item.name
+  const initials = user?.name
     .split(" ")
     .map((word) => word[0])
     .join("")
@@ -57,7 +56,7 @@ export default function Comment({
           }}>
           <Chip
             icon={<TimeIcon sx={{ fontSize: 14 }} />}
-            label="A few seconds ago"
+            label={formatRelative(new Date(comment.created), new Date())}
             size="small"
             sx={{
               bgcolor: green[50],
@@ -73,7 +72,7 @@ export default function Comment({
 
           <IconButton
             size="small"
-            onClick={() => remove(item.id)}
+            onClick={() => remove(comment.id)}
             sx={{
               color: "text.secondary",
               "&:hover": {
@@ -92,7 +91,7 @@ export default function Comment({
             lineHeight: 1.7,
             whiteSpace: "pre-wrap",
           }}>
-          {item.content}
+          {comment.content}
         </Typography>
 
         <Divider sx={{ my: 1.5 }} />
@@ -112,7 +111,7 @@ export default function Comment({
           <Typography
             variant="body2"
             sx={{ fontWeight: 600, color: "text.secondary" }}>
-            {item.name}
+            {user?.name}
           </Typography>
         </Stack>
       </CardContent>
