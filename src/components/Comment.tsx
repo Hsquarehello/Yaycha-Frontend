@@ -1,14 +1,23 @@
-import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
-
 import {
-  Alarm as TimeIcon,
-  AccountCircle as UserIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+  Avatar,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material";
 
-import { green } from "@mui/material/colors";
+import { Alarm as TimeIcon, Delete as DeleteIcon } from "@mui/icons-material";
 
-import type { ItemType } from "../lib/types";
+import { blue, green } from "@mui/material/colors";
+
+interface ItemType {
+  id: number;
+  content: string;
+  name: string;
+}
 
 export default function Comment({
   item,
@@ -17,42 +26,95 @@ export default function Comment({
   item: ItemType;
   remove: (id: number | string) => void;
 }) {
+  const initials = item.name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <Card sx={{ mb: 2 }}>
-      <CardContent>
-        <Box
+    <Card
+      sx={{
+        mb: 2,
+        borderRadius: 3,
+        border: "1px solid",
+        borderColor: "divider",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
+        },
+      }}>
+      <CardContent sx={{ p: 2.5 }}>
+        <Stack
+          direction="row"
           sx={{
-            display: "flex",
-            flexDirection: "row",
+            mb: 1.5,
             justifyContent: "space-between",
+            alignItems: "center",
           }}>
-          <Box
+          <Chip
+            icon={<TimeIcon sx={{ fontSize: 14 }} />}
+            label="A few seconds ago"
+            size="small"
             sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 1,
+              bgcolor: green[50],
+              color: green[700],
+              fontWeight: 600,
+              borderRadius: "999px",
+              px: 0.5,
+              "& .MuiChip-icon": {
+                color: green[600],
+              },
+            }}
+          />
+
+          <IconButton
+            size="small"
+            onClick={() => remove(item.id)}
+            sx={{
+              color: "text.secondary",
+              "&:hover": {
+                bgcolor: "error.light",
+                color: "error.main",
+              },
             }}>
-            <TimeIcon sx={{ fontSize: 10 }} color="success" />
-            <Typography variant="caption" sx={{ color: green[500] }}>
-              A few second ago
-            </Typography>
-          </Box>
-          <IconButton size="small" onClick={() => remove(item.id)}>
             <DeleteIcon fontSize="inherit" />
           </IconButton>
-        </Box>
-        <Typography sx={{ my: 3 }}>{item.content}</Typography>
-        <Box
+        </Stack>
+
+        <Typography
           sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 1,
+            my: 2,
+            color: "text.primary",
+            lineHeight: 1.7,
+            whiteSpace: "pre-wrap",
           }}>
-          <UserIcon sx={{ fontSize: 12 }} color="info" />
-          <Typography variant="caption">{item.name}</Typography>
-        </Box>
+          {item.content}
+        </Typography>
+
+        <Divider sx={{ my: 1.5 }} />
+
+        <Stack direction="row" sx={{ alignItems: "center" }} spacing={1.2}>
+          <Avatar
+            sx={{
+              width: 32,
+              height: 32,
+              fontSize: 14,
+              fontWeight: 600,
+              bgcolor: blue[500],
+            }}>
+            {initials}
+          </Avatar>
+
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: "text.secondary" }}>
+            {item.name}
+          </Typography>
+        </Stack>
       </CardContent>
     </Card>
   );
