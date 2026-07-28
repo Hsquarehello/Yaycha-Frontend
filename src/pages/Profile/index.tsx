@@ -1,25 +1,35 @@
-import { Avatar, Box, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Typography } from "@mui/material";
 import { pink } from "@mui/material/colors";
 import type { JSX } from "react";
 import Item from "../../components/Item";
-
-// Item Component ရဲ့ Props Type သတ်မှတ်ခြင်း
-interface ItemData {
-  id: number;
-  content: string;
-  name: string;
-}
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUser, type UserForProfile } from "../../lib/fetcher";
+import type { Post } from "../../types/post";
 
 export default function Profile(): JSX.Element {
-  const dummyItem: ItemData = {
-    id: 1,
-    content: "A post content from Alice",
-    name: "Alice",
-  };
+  const { id } = useParams<{ id: string }>();
+  const { isLoading, isError, error, data } = useQuery<UserForProfile, Error>({
+    queryKey: [`users/${id}`],
+    queryFn: async () => fetchUser(id!),
+    enabled: !!id,
+  });
 
   const handleRemove = (): void => {
     // Post ဖျက်တဲ့ Logic ရေးရန်
   };
+
+  if (isError) {
+    return (
+      <Box>
+        <Alert severity="warning">{error.message}</Alert>
+      </Box>
+    );
+  }
+
+  if (isLoading) {
+    return <Box sx={{ textAlign: "center" }}>Loading...</Box>;
+  }
 
   return (
     <Box>
@@ -36,19 +46,21 @@ export default function Profile(): JSX.Element {
           justifyContent: "center",
           alignItems: "center",
           gap: 1,
-        }}
-      >
+        }}>
         <Avatar sx={{ width: 100, height: 100, bgcolor: pink[500] }} />
         <Box sx={{ textAlign: "center" }}>
-          <Typography>Alice</Typography>
+          <Typography>{data?.username}</Typography>
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
-            Alice's profile bio content here
+            {data?.bio}
           </Typography>
         </Box>
       </Box>
 
       {/* User Post Item */}
-      <Item key={dummyItem.id} remove={handleRemove} item={dummyItem} />
+      {data && data.posts?.map((post: Post) => (
+        <Item key={post.id} item={post} remove={handleRemove} />
+      ))}
+
     </Box>
   );
 }

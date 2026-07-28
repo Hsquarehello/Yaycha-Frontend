@@ -34,7 +34,7 @@ export default function Home(): JSX.Element {
   });
 
   const deletePost = async (postId: number | string) => {
-    const response = await fetch(`${api}/api/posts/${postId}`, {
+    const response = await fetch(`${api}/posts/${postId}`, {
       method: "DELETE",
     });
     if (!response.ok) {

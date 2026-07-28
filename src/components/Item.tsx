@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
 import type { FormEvent } from "react";
-import {formatRelative} from "date-fns";
+import { formatRelative } from "date-fns";
 import type { Post } from "../types/post.js";
 
 import {
@@ -44,7 +44,7 @@ export default function Item({
           </Box>
           <IconButton
             size="small"
-            onClick={(e:FormEvent) => {
+            onClick={(e: FormEvent) => {
               remove(item.id);
               e.stopPropagation();
             }}>
@@ -53,6 +53,10 @@ export default function Item({
         </Box>
         <Typography sx={{ my: 3 }}>{item.content}</Typography>
         <Box
+          onClick={(e:FormEvent<HTMLElement>) => {
+            navigate(`/profile/${item.user?.id}`);
+            e.stopPropagation();
+          }}
           sx={{
             display: "flex",
             flexDirection: "row",

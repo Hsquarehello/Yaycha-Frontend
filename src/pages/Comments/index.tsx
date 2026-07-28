@@ -6,7 +6,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Post } from "../../types/post.js";
 import { useParams } from "react-router-dom";
 
-const api = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 export default function Comments(): JSX.Element {
   const { setGlobalMsg } = useApp();
   const { id } = useParams<{ id: string }>();
@@ -24,7 +24,7 @@ export default function Comments(): JSX.Element {
   } = useQuery({
     queryKey: ["comments"],
     queryFn: async () => {
-      const response = await fetch(`${api}/api/posts/${id}`);
+      const response = await fetch(`${api}/posts/${id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch comments");
       }
@@ -33,7 +33,7 @@ export default function Comments(): JSX.Element {
   });
 
   const deleteComment = async (commentId: number | string): Promise<void> => {
-    const response = await fetch(`${api}/api/comments/${commentId}`, {
+    const response = await fetch(`${api}/comments/${commentId}`, {
       method: "DELETE",
     });
     if (!response.ok) {
