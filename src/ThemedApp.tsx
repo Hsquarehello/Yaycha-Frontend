@@ -1,8 +1,5 @@
-import { createContext, useContext, useState, useMemo } from "react";
-import {
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { createContext, useContext, useState, useMemo, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
@@ -26,6 +23,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Template from "./Template";
 import { routes } from "./routes/routes";
+import { fetchVerify } from "./lib/fetcher";
 
 // define AppContexType
 type AppContextType = {
@@ -75,6 +73,12 @@ export default function ThemedApp() {
   const [globalMsg, setGlobalMsg] = useState<string | null>(null);
   const [auth, setAuth] = useState(null);
 
+  useEffect(() => {
+    fetchVerify().then((user) => {
+      if (user) setAuth(user);
+    });
+  }, []);
+
   const theme = useMemo(() => {
     return createTheme({
       palette: {
@@ -112,13 +116,10 @@ export default function ThemedApp() {
   );
 }
 
-
 declare global {
   interface Window {
-    __TANSTACK_QUERY_CLIENT__:
-      import('@tanstack/query-core')
-        .QueryClient
+    __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
   }
 }
 
-window.__TANSTACK_QUERY_CLIENT__ = queryClient
+window.__TANSTACK_QUERY_CLIENT__ = queryClient;

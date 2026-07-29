@@ -38,11 +38,11 @@ export interface UserForProfile {
   username: string;
   bio?: string;
   created?: string;
-  posts: Post[]
+  posts: Post[];
 }
 
 // Token ရယူသည့် Function ( string သို့မဟုတ် null ထွက်နိုင်သည်)
-const getToken = (): string | null => {
+export const getToken = (): string | null => {
   return localStorage.getItem("token");
 };
 
@@ -75,4 +75,49 @@ export async function fetchUser(id: number | string): Promise<UserForProfile> {
   // 4. Response JSON ကို User Type အဖြစ် Return ပြန်ပေးခြင်း
   const data: UserForProfile = await res.json();
   return data;
+}
+
+export async function fetchVerify() {
+  const token = getToken();
+  const res = await fetch(`${api}/verify`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.ok) {
+    return res.json();
+  }
+  return;
+}
+
+export async function postPost(content: string) {
+  const token = getToken();
+  const res = await fetch(`${api}/posts`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.ok) {
+    return res.json();
+  }
+  throw new Error("Error: Check Network Log");
+}
+
+export async function postComment(content:string, postId:string) {
+  const token = getToken();
+  const res = await fetch(`${api}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ content, postId }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (res.ok) {
+    return res.json();
+  }
+  throw new Error("Error: Check Network Log");
 }

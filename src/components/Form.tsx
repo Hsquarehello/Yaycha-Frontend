@@ -2,7 +2,7 @@ import { useRef } from "react";
 
 import { Box, TextField, Button } from "@mui/material";
 
-export default function Form({ add }: { add: (content: string, name: string) => void }) {
+export default function Form({ add }: { add: (content: string) => void }) {
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
 
   return (
@@ -12,7 +12,7 @@ export default function Form({ add }: { add: (content: string, name: string) => 
 
         const content = contentRef.current?.value;
         if (content) {
-          add(content, "Alice");
+          add(content);
           e.currentTarget.reset();
         }
       }}>
