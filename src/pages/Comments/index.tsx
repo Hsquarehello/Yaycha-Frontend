@@ -34,18 +34,6 @@ export default function Comments(): JSX.Element {
     },
   });
 
-  // const addComment = useMutation({
-  //   mutationFn: postComment,
-  //   onSuccess: async (comment) => {
-  //     await queryClient.cancelQueries({ queryKey: ["comments"] });
-  //     await queryClient.setQueryData(["comments"], (old) => {
-  //       old.comments = [...old.comments, comment];
-  //       return { ...old };
-  //     });
-  //     setGlobalMsg("A comment added");
-  //   },
-  // });
-
   // 1. Data Structure အတွက် Type Definitions
   interface Comment {
     id: string;
@@ -102,7 +90,7 @@ export default function Comments(): JSX.Element {
 
     const response = await fetch(`${api}/comments/${commentId}`, {
       method: "DELETE",
-      headers
+      headers,
     });
     if (!response.ok) {
       throw new Error("Failed to remove comment");
@@ -125,6 +113,7 @@ export default function Comments(): JSX.Element {
     if (!id) return;
 
     addComment.mutate({ content: contentText, postId: id });
+    e.currentTarget.reset();
     setGlobalMsg("Comment added");
   };
 
@@ -142,7 +131,6 @@ export default function Comments(): JSX.Element {
         data.comments?.map((comment) => (
           <Comment
             key={comment.id}
-            user={data.user}
             comment={comment}
             remove={handleRemove.mutate}
           />

@@ -10,27 +10,29 @@ import {
 } from "@mui/material";
 
 import { Alarm as TimeIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import {formatRelative} from "date-fns";
+import { formatRelative } from "date-fns";
 
 import { blue, green } from "@mui/material/colors";
 import type { Comment } from "../types/comment.js";
 import type { User } from "../types/user.js";
+import { useApp } from "../ThemedApp.js";
 
 export default function Comment({
   comment,
-  user,
   remove,
 }: {
   comment: Comment;
   user?: User | undefined;
   remove: (id: number | string) => void;
 }) {
-  const initials = user?.name
+  const { auth } = useApp();
+
+  let initials = comment.user?.name
     .split(" ")
     .map((word) => word[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();
+    .toUpperCase();;
 
   return (
     <Card
@@ -70,18 +72,20 @@ export default function Comment({
             }}
           />
 
-          <IconButton
-            size="small"
-            onClick={() => remove(comment.id)}
-            sx={{
-              color: "text.secondary",
-              "&:hover": {
-                bgcolor: "error.light",
-                color: "error.main",
-              },
-            }}>
-            <DeleteIcon fontSize="inherit" />
-          </IconButton>
+          {auth && auth.id === comment.user?.id && (
+            <IconButton
+              size="small"
+              onClick={() => remove(comment.id)}
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  bgcolor: "error.light",
+                  color: "error.main",
+                },
+              }}>
+              <DeleteIcon fontSize="inherit" />
+            </IconButton>
+          )}
         </Stack>
 
         <Typography
@@ -111,7 +115,7 @@ export default function Comment({
           <Typography
             variant="body2"
             sx={{ fontWeight: 600, color: "text.secondary" }}>
-            {user?.name}
+            {comment.user?.name}
           </Typography>
         </Stack>
       </CardContent>

@@ -3,21 +3,64 @@ import { pink } from "@mui/material/colors";
 import type { JSX } from "react";
 import Item from "../../components/Item";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { fetchUser, type UserForProfile } from "../../lib/fetcher";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { fetchUser, getToken, type UserForProfile } from "../../lib/fetcher";
 import type { Post } from "../../types/post";
+import { queryClient, useApp } from "../../ThemedApp";
 
+const api = import.meta.env.VITE_API || "http://localhost:8000/api";
 export default function Profile(): JSX.Element {
   const { id } = useParams<{ id: string }>();
+  const { setGlobalMsg } = useApp();
+
   const { isLoading, isError, error, data } = useQuery<UserForProfile, Error>({
     queryKey: [`users/${id}`],
     queryFn: async () => fetchUser(id!),
     enabled: !!id,
   });
 
-  const handleRemove = (): void => {
-    // Post ဖျက်တဲ့ Logic ရေးရန်
+  const deletePost = async (postId: number | string) => {
+    const token = getToken();
+    
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    const response = await fetch(`${api}/posts/${postId}`, {
+      method: "DELETE",
+      headers,
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete post");
+    }
   };
+
+  const handleRemove = useMutation({
+    mutationFn: deletePost,
+    onMutate: (id: string | number) => {
+      queryClient.cancelQueries({ queryKey: [`users/${id}`] });
+
+      const previousPosts = queryClient.getQueryData<Post[]>([`users/${id}`]);
+
+      queryClient.setQueryData<Post[]>([`users/${id}`], (old) =>
+        old ? old.filter((item) => item.id !== id) : [],
+      );
+
+      setGlobalMsg("Post removed successfully.");
+      return { previousPosts };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData([`users/${id}`], context.previousPosts);
+      }
+      setGlobalMsg("Failed to delete post");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [`users/${id}`] });
+    },
+  });
 
   if (isError) {
     return (
@@ -57,10 +100,10 @@ export default function Profile(): JSX.Element {
       </Box>
 
       {/* User Post Item */}
-      {data && data.posts?.map((post: Post) => (
-        <Item key={post.id} item={post} remove={handleRemove} />
-      ))}
-
+      {data &&
+        data.posts?.map((post: Post) => (
+          <Item key={post.id} item={post} remove={handleRemove.mutate} />
+        ))}
     </Box>
   );
 }

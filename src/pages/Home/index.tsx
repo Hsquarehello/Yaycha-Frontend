@@ -9,7 +9,7 @@ import { queryClient, useApp } from "../../ThemedApp";
 import type { Post } from "../../types/post";
 import { getToken, postPost } from "../../lib/fetcher";
 
-const api = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export default function Home(): JSX.Element {
   const { auth, showForm, setGlobalMsg } = useApp();
@@ -26,7 +26,7 @@ export default function Home(): JSX.Element {
   } = useQuery({
     queryKey: ["posts"],
     queryFn: async () => {
-      const response = await fetch(`${api}/api/posts`);
+      const response = await fetch(`${api}/posts`);
       if (!response.ok) {
         throw new Error("Failed to fetch posts");
       }
@@ -42,7 +42,7 @@ export default function Home(): JSX.Element {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-    const response = await fetch(`${api}/api/posts/${postId}`, {
+    const response = await fetch(`${api}/posts/${postId}`, {
       method: "DELETE",
       headers
     });

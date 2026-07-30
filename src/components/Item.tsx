@@ -12,6 +12,7 @@ import {
 import { green } from "@mui/material/colors";
 
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../ThemedApp.js";
 
 export default function Item({
   item,
@@ -21,6 +22,8 @@ export default function Item({
   remove: (id: number | string) => void;
 }) {
   const navigate = useNavigate();
+  const { auth } = useApp();
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent onClick={() => navigate(`/comments/${item.id}`)}>
@@ -42,18 +45,20 @@ export default function Item({
               {formatRelative(item.created, new Date())}
             </Typography>
           </Box>
-          <IconButton
-            size="small"
-            onClick={(e: FormEvent) => {
-              remove(item.id);
-              e.stopPropagation();
-            }}>
-            <DeleteIcon fontSize="inherit" />
-          </IconButton>
+          {auth && auth.username === item.user?.username && (
+            <IconButton
+              size="small"
+              onClick={(e: FormEvent) => {
+                remove(item.id);
+                e.stopPropagation();
+              }}>
+              <DeleteIcon fontSize="inherit" />
+            </IconButton>
+          )}
         </Box>
         <Typography sx={{ my: 3 }}>{item.content}</Typography>
         <Box
-          onClick={(e:FormEvent<HTMLElement>) => {
+          onClick={(e: FormEvent<HTMLElement>) => {
             navigate(`/profile/${item.user?.id}`);
             e.stopPropagation();
           }}

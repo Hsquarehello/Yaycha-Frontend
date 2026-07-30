@@ -10,16 +10,27 @@ import {
 } from "@mui/icons-material";
 
 export default function Header() {
-  const { showForm, setShowForm, mode, setMode , setShowDrawer} = useApp();
+  const { showForm,auth, setShowForm, mode, setMode, setShowDrawer,setGlobalMsg } = useApp();
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton color="inherit" edge="start" onClick={() => setShowDrawer(true)}>
+        <IconButton
+          color="inherit"
+          edge="start"
+          onClick={() => setShowDrawer(true)}>
           <MenuIcon />
         </IconButton>
         <Typography sx={{ flexGrow: 1, ml: 2 }}>Yaycha</Typography>
         <Box>
-          <IconButton color="inherit" onClick={() => setShowForm(!showForm)}>
+          <IconButton
+            color="inherit"
+            onClick={() => {
+              setShowForm(!showForm);
+              if(!auth){
+                setGlobalMsg("Please login account!");
+                
+              }
+            }}>
             <AddIcon />
           </IconButton>
           {mode === "dark" ? (

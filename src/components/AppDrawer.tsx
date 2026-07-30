@@ -24,7 +24,7 @@ import { useApp } from "../ThemedApp";
 import { useNavigate } from "react-router-dom";
 
 export default function AppDrawer() {
-  const { showDrawer, setShowDrawer, auth, setAuth } = useApp();
+  const { showDrawer, setShowDrawer, auth, setAuth, setGlobalMsg } = useApp();
   const navigate = useNavigate();
   return (
     <div>
@@ -86,6 +86,7 @@ export default function AppDrawer() {
                     localStorage.removeItem("token");
                     setAuth(null);
                     setShowDrawer(false);
+                    setGlobalMsg("Logged out!")
                     navigate("/");
                   }}>
                   <ListItemIcon>
