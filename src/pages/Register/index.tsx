@@ -1,5 +1,5 @@
 import { Box, Button, TextField, Typography, Alert } from "@mui/material";
-import type { JSX, FormEvent } from "react";
+import type {  FormEvent } from "react";
 import { useState, useRef } from "react";
 import { useApp } from "../../ThemedApp";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { postUser } from "../../lib/fetcher";
 import type { User } from "../../types/user";
 
-export default function Register(): JSX.Element {
+export default function Register() {
   const { setGlobalMsg } = useApp();
 
   const [error, setError] = useState<string>("");

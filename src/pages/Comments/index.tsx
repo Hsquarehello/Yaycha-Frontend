@@ -1,48 +1,35 @@
 import { Box, Button, TextField, Alert } from "@mui/material";
-import { useRef, type FormEvent, type JSX } from "react";
+import { useRef, type FormEvent } from "react";
 import Comment from "../../components/Comment";
 import { queryClient, useApp } from "../../ThemedApp";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Post } from "../../types/post.js";
 import { useParams } from "react-router-dom";
 import { getToken, postComment } from "../../lib/fetcher.js";
+import type { Comment as CommentOfPost} from "../../types/comment.js";
 
 const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-export default function Comments(): JSX.Element {
+
+export default function Comments() {
   const { setGlobalMsg } = useApp();
   const { id } = useParams<{ id: string }>();
   const commentInput = useRef<HTMLTextAreaElement>(null);
 
-  const {
-    isLoading,
-    isError,
-    error,
-    data,
-  }: {
-    isLoading: boolean;
-    isError: boolean;
-    error: Error | null;
-    data: Post | undefined;
-  } = useQuery({
+  const fetchPost = async ():Promise<Post> => {
+    const response = await fetch(`${api}/posts/${id}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch comments");
+    }
+    return response.json();
+  };
+
+  const { isLoading, isError, error, data } = useQuery({
     queryKey: ["comments"],
-    queryFn: async () => {
-      const response = await fetch(`${api}/posts/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch comments");
-      }
-      return response.json();
-    },
+    queryFn: fetchPost,
   });
 
-  // 1. Data Structure အတွက် Type Definitions
-  interface Comment {
-    id: string;
-    content: string;
-    // အခြား comment ရဲ့ fields များ...
-  }
-
   interface CommentsQueryData {
-    comments: Comment[];
+    comments: CommentOfPost[];
     // အခြား API metadata များ (ဥပမာ- totalCount စသည်)
   }
 
@@ -52,7 +39,7 @@ export default function Comments(): JSX.Element {
   }
 
   // 2. Type-safe useMutation
-  const addComment = useMutation<Comment, Error, NewCommentPayload>({
+  const addComment = useMutation<CommentOfPost, Error, NewCommentPayload>({
     mutationFn: ({ content, postId }) => postComment(content, postId),
 
     onSuccess: async (newComment) => {

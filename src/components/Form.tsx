@@ -2,7 +2,9 @@ import { useRef } from "react";
 
 import { Box, TextField, Button } from "@mui/material";
 
-export default function Form({ add }: { add: (content: string) => void }) {
+type FormProps = { add: (content: string) => void };
+
+export default function Form({ add }: FormProps) {
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
 
   return (
@@ -16,7 +18,6 @@ export default function Form({ add }: { add: (content: string) => void }) {
           e.currentTarget.reset();
         }
       }}>
-        
       <Box sx={{ mb: 4, textAlign: "right" }}>
         <TextField
           inputRef={contentRef}

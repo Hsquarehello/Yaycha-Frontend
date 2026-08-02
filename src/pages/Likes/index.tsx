@@ -1,8 +1,7 @@
 import { Box } from "@mui/material";
-import type { JSX } from "react";
 import UserList from "../../components/UserList";
 
-export default function Likes(): JSX.Element {
+export default function Likes() {
   return (
     <Box>
       <UserList title="Likes" />

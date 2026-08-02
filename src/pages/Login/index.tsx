@@ -1,5 +1,5 @@
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
-import type { FormEvent, JSX } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import { postLogin } from "../../lib/fetcher";
@@ -8,10 +8,10 @@ import type { User } from "../../types/user";
 
 import { useApp } from "../../ThemedApp";
 
-export default function Login(): JSX.Element {
+export default function Login() {
   const navigate = useNavigate();
-  const { setAuth,setShowDrawer } = useApp();
-  setShowDrawer(false)
+  const { setAuth, setShowDrawer } = useApp();
+  setShowDrawer(false);
 
   const usernameInput = useRef<HTMLInputElement>(null);
   const passwordInput = useRef<HTMLInputElement>(null);
@@ -66,8 +66,17 @@ export default function Login(): JSX.Element {
 
       <form onSubmit={handleSubmit}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}>
-          <TextField inputRef={usernameInput} placeholder="Username" fullWidth />
-          <TextField inputRef={passwordInput} type="password" placeholder="Password" fullWidth />
+          <TextField
+            inputRef={usernameInput}
+            placeholder="Username"
+            fullWidth
+          />
+          <TextField
+            inputRef={passwordInput}
+            type="password"
+            placeholder="Password"
+            fullWidth
+          />
           <Button type="submit" variant="contained" fullWidth>
             Login
           </Button>

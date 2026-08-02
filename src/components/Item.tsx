@@ -14,13 +14,12 @@ import { green } from "@mui/material/colors";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../ThemedApp.js";
 
-export default function Item({
-  item,
-  remove,
-}: {
+type ItemProps = {
   item: Post;
   remove: (id: number | string) => void;
-}) {
+};
+
+export default function Item({ item, remove }: ItemProps) {
   const navigate = useNavigate();
   const { auth } = useApp();
 

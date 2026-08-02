@@ -7,14 +7,13 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import type { JSX } from "react";
 
 // Component ရဲ့ Props Type ကို သတ်မှတ်ခြင်း
 interface UserListProps {
   title: string;
 }
 
-export default function UserList({ title }: UserListProps): JSX.Element {
+export default function UserList({ title }: UserListProps) {
   return (
     <Box>
       {/* စာမျက်နှာ ခေါင်းစဉ် */}

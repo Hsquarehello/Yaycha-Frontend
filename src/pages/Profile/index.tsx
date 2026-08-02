@@ -1,6 +1,5 @@
 import { Alert, Avatar, Box, Typography } from "@mui/material";
 import { pink } from "@mui/material/colors";
-import type { JSX } from "react";
 import Item from "../../components/Item";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -9,7 +8,7 @@ import type { Post } from "../../types/post";
 import { queryClient, useApp } from "../../ThemedApp";
 
 const api = import.meta.env.VITE_API || "http://localhost:8000/api";
-export default function Profile(): JSX.Element {
+export default function Profile() {
   const { id } = useParams<{ id: string }>();
   const { setGlobalMsg } = useApp();
 
@@ -21,7 +20,7 @@ export default function Profile(): JSX.Element {
 
   const deletePost = async (postId: number | string) => {
     const token = getToken();
-    
+
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };

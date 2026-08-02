@@ -17,14 +17,13 @@ import type { Comment } from "../types/comment.js";
 import type { User } from "../types/user.js";
 import { useApp } from "../ThemedApp.js";
 
-export default function Comment({
-  comment,
-  remove,
-}: {
+type CommentProps = {
   comment: Comment;
   user?: User | undefined;
   remove: (id: number | string) => void;
-}) {
+};
+
+export default function Comment({ comment, remove }: CommentProps) {
   const { auth } = useApp();
 
   let initials = comment.user?.name
@@ -32,7 +31,7 @@ export default function Comment({
     .map((word) => word[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();;
+    .toUpperCase();
 
   return (
     <Card

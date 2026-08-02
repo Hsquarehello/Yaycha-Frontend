@@ -1,6 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-import type { JSX } from "react";
 import { Box, Alert } from "@mui/material";
 import Form from "../../components/Form";
 import Item from "../../components/Item";
@@ -11,27 +10,20 @@ import { getToken, postPost } from "../../lib/fetcher";
 
 const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
-export default function Home(): JSX.Element {
+export default function Home() {
   const { auth, showForm, setGlobalMsg } = useApp();
-  const {
-    isLoading,
-    isError,
-    error,
-    data,
-  }: {
-    isLoading: boolean;
-    isError: boolean;
-    error: Error | null;
-    data: Post[] | undefined;
-  } = useQuery({
+
+  const fetchPosts = async (): Promise<Post[]> => {
+    const response = await fetch(`${api}/posts`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    return response.json();
+  };
+
+  const { isLoading, isError, error, data } = useQuery({
     queryKey: ["posts"],
-    queryFn: async () => {
-      const response = await fetch(`${api}/posts`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch posts");
-      }
-      return response.json();
-    },
+    queryFn: fetchPosts,
   });
 
   const deletePost = async (postId: number | string) => {
@@ -42,9 +34,10 @@ export default function Home(): JSX.Element {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
     const response = await fetch(`${api}/posts/${postId}`, {
       method: "DELETE",
-      headers
+      headers,
     });
     if (!response.ok) {
       throw new Error("Failed to delete post");
@@ -76,13 +69,8 @@ export default function Home(): JSX.Element {
     },
   });
 
-  interface PostResponse {
-    id: string;
-    content: string;
-    createdAt: string;
-  }
 
-  type PostsQueryData = PostResponse[];
+  type PostsQueryData = Post[];
 
   const add = useMutation({
     mutationFn: postPost,
