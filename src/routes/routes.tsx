@@ -27,7 +27,7 @@ export const routes = [
       element: <Profile />
    },
    {
-      path: "/likes/:id",
+      path: "/likes/:id/:type",
       element: <Likes />
    }
 ]

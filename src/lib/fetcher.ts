@@ -1,4 +1,5 @@
-import type { Post } from "../types/post";
+import type { CommentLike } from "../types/comment";
+import type { Post, PostLike } from "../types/post";
 import type { User } from "../types/user";
 
 const api = import.meta.env.VITE_API;
@@ -106,7 +107,7 @@ export async function postPost(content: string) {
   throw new Error("Error: Check Network Log");
 }
 
-export async function postComment(content:string, postId:string) {
+export async function postComment(content: string, postId: string) {
   const token = getToken();
   const res = await fetch(`${api}/comments`, {
     method: "POST",
@@ -116,6 +117,50 @@ export async function postComment(content:string, postId:string) {
       Authorization: `Bearer ${token}`,
     },
   });
+  if (res.ok) {
+    return res.json();
+  }
+  throw new Error("Error: Check Network Log");
+}
+
+export async function postLike(id: number | string, type: "post" | "comment") {
+  const token = getToken();
+  const res = await fetch(
+    `${api}/${type === "post" ? "posts" : "comments"}/like/${id}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (res.ok) {
+    return res.json();
+  }
+  throw new Error("Error: Check Network Log");
+}
+
+export async function deleteLike(id: number | string, type: "post" | "comment") {
+  const token = getToken();
+  const res = await fetch(
+    `${api}/${type === "post" ? "posts" : "comments"}/unlike/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (res.ok) {
+    return res.json();
+  }
+  throw new Error("Error: Check Network Log");
+}
+
+export async function fetchLikesOrComment(id: number | string, type: "post" | "comment"):Promise<PostLike[] | CommentLike[]> {
+  const res = await fetch(
+    `${api}/${type === "post" ? "posts" : "comments"}/like/${id}`,
+  );
   if (res.ok) {
     return res.json();
   }

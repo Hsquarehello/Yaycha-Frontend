@@ -7,6 +7,7 @@ import {
   IconButton,
   Stack,
   Typography,
+  Box,
 } from "@mui/material";
 
 import { Alarm as TimeIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -16,6 +17,7 @@ import { blue, green } from "@mui/material/colors";
 import type { Comment } from "../types/comment.js";
 import type { User } from "../types/user.js";
 import { useApp } from "../ThemedApp.js";
+import LikeButton from "./LikeButton.js";
 
 type CommentProps = {
   comment: Comment;
@@ -99,24 +101,33 @@ export default function Comment({ comment, remove }: CommentProps) {
 
         <Divider sx={{ my: 1.5 }} />
 
-        <Stack direction="row" sx={{ alignItems: "center" }} spacing={1.2}>
-          <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              fontSize: 14,
-              fontWeight: 600,
-              bgcolor: blue[500],
-            }}>
-            {initials}
-          </Avatar>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
+          <Stack direction="row" sx={{ alignItems: "center" }} spacing={1.2}>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                fontSize: 14,
+                fontWeight: 600,
+                bgcolor: blue[500],
+              }}>
+              {initials}
+            </Avatar>
 
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 600, color: "text.secondary" }}>
-            {comment.user?.name}
-          </Typography>
-        </Stack>
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, color: "text.secondary" }}>
+              {comment.user?.name}
+            </Typography>
+          </Stack>
+          <LikeButton item={{ ...comment, type: "comment" }} />
+        </Box>
       </CardContent>
     </Card>
   );

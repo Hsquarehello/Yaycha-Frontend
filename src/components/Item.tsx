@@ -1,5 +1,4 @@
 import { Box, Card, CardContent, Typography, IconButton } from "@mui/material";
-import type { FormEvent } from "react";
 import { formatRelative } from "date-fns";
 import type { Post } from "../types/post.js";
 
@@ -13,6 +12,8 @@ import { green } from "@mui/material/colors";
 
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../ThemedApp.js";
+import LikeButton from "./LikeButton.js";
+import CommentButton from "./CommentButton.js";
 
 type ItemProps = {
   item: Post;
@@ -25,7 +26,7 @@ export default function Item({ item, remove }: ItemProps) {
 
   return (
     <Card sx={{ mb: 2 }}>
-      <CardContent onClick={() => navigate(`/comments/${item.id}`)}>
+      <CardContent>
         <Box
           sx={{
             display: "flex",
@@ -47,9 +48,8 @@ export default function Item({ item, remove }: ItemProps) {
           {auth && auth.username === item.user?.username && (
             <IconButton
               size="small"
-              onClick={(e: FormEvent) => {
+              onClick={() => {
                 remove(item.id);
-                e.stopPropagation();
               }}>
               <DeleteIcon fontSize="inherit" />
             </IconButton>
@@ -57,18 +57,29 @@ export default function Item({ item, remove }: ItemProps) {
         </Box>
         <Typography sx={{ my: 3 }}>{item.content}</Typography>
         <Box
-          onClick={(e: FormEvent<HTMLElement>) => {
-            navigate(`/profile/${item.user?.id}`);
-            e.stopPropagation();
-          }}
           sx={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            gap: 1,
+            justifyContent: "space-between",
           }}>
-          <UserIcon sx={{ fontSize: 26 }} color="info" />
-          <Typography variant="caption">{item.user?.name}</Typography>
+          <Box
+            onClick={() => {
+              navigate(`/profile/${item.user?.id}`);
+            }}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1,
+            }}>
+            <UserIcon sx={{ fontSize: 26 }} color="info" />
+            <Typography variant="caption">{item.user?.name}</Typography>
+          </Box>
+          <Box>
+            <LikeButton item={{ ...item, type: "post" }} />
+            <CommentButton item={{ ...item, type: "post" }} />
+          </Box>
         </Box>
       </CardContent>
     </Card>

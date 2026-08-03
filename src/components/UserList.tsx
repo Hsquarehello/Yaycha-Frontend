@@ -4,16 +4,23 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Typography,
 } from "@mui/material";
+import type { CommentLike } from "../types/comment";
+import type { PostLike } from "../types/post";
+import { useNavigate } from "react-router-dom";
 
 // Component ရဲ့ Props Type ကို သတ်မှတ်ခြင်း
 interface UserListProps {
   title: string;
+  data?: PostLike[] | CommentLike[];
 }
 
-export default function UserList({ title }: UserListProps) {
+export default function UserList({ title, data }: UserListProps) {
+  const navigate = useNavigate();
+
   return (
     <Box>
       {/* စာမျက်နှာ ခေါင်းစဉ် */}
@@ -23,24 +30,21 @@ export default function UserList({ title }: UserListProps) {
 
       {/* User စာရင်း ပြသသည့် List */}
       <List>
-        <ListItem>
-          <ListItemAvatar>
-            <Avatar />
-          </ListItemAvatar>
-          <ListItemText
-            primary="Alice @alice"
-            secondary="Alice's profile bio"
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemAvatar>
-            <Avatar />
-          </ListItemAvatar>
-          <ListItemText
-            primary="Alice @alice"
-            secondary="Alice's profile bio"
-          />
-        </ListItem>
+        {data &&
+          data.map((item) => (
+            <ListItem key={item.user?.id}>
+              <ListItemButton
+                onClick={() => navigate(`/profile/${item.user?.id}`)}>
+                <ListItemAvatar>
+                  <Avatar />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={`${item.user?.name} @${item.user?.username}`}
+                  secondary={item.user?.bio}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
       </List>
     </Box>
   );
