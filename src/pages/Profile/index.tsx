@@ -8,6 +8,7 @@ import { queryClient, useApp } from "../../ThemedApp";
 import FollowButton from "../../components/FollowButton";
 import Item from "../../components/Item";
 import type { User } from "../../types/user";
+import Loading from "../../components/Loading";
 
 const api = import.meta.env.VITE_API || "http://localhost:8000/api";
 export default function Profile() {
@@ -72,7 +73,7 @@ export default function Profile() {
   }
 
   if (isLoading) {
-    return <Box sx={{ textAlign: "center" }}>Loading...</Box>;
+    return <Loading message="Loading data..." />;
   }
 
   return (
@@ -97,16 +98,28 @@ export default function Profile() {
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
             {data?.bio}
           </Typography>
-          <Button>
-            {data && <FollowButton user={data} />}
-          </Button>
+          <Button>{data && <FollowButton user={data} />}</Button>
         </Box>
       </Box>
 
       {/* User Post Item */}
       {data &&
         data.posts?.map((post: Post) => (
-          <Item key={post.id} item={post} remove={handleRemove.mutate} />
+          <Item
+            key={post.id}
+            item={{
+              ...post,
+              user: {
+                username: data.username,
+                id: data.id,
+                name: data.name,
+                follower: data.follower,
+                following: data.following,
+              },
+              comments: data.comments,
+            }}
+            remove={handleRemove.mutate}
+          />
         ))}
     </Box>
   );

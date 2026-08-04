@@ -7,6 +7,7 @@ import type { Post } from "../../types/post.js";
 import { useParams } from "react-router-dom";
 import { getToken, postComment } from "../../lib/fetcher.js";
 import type { Comment as CommentOfPost} from "../../types/comment.js";
+import Loading from "../../components/Loading.js";
 
 const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
@@ -111,7 +112,7 @@ export default function Comments() {
           <Alert severity="warning">{error?.message}</Alert>
         </Box>
       )}
-      {isLoading && <Box sx={{ textAlign: "center" }}>Loading...</Box>}
+      {isLoading && <Loading message="Loading comments..."/>}
 
       {/* Comment များကို Array map လုပ်ပြီး ပြသခြင်း */}
       {data &&

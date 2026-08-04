@@ -1,5 +1,6 @@
 import type { Follow } from "./Follow";
 import type { Post } from "./post";
+import type { Comment } from "./comment";
 
 export interface User {
    id: number;
@@ -8,5 +9,6 @@ export interface User {
    bio?: string;
    follower?: Follow[],
    following?: Follow[],
-   posts?: Post[]
+   posts?: Post[],
+   comments?: Comment[],
 }

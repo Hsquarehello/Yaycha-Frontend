@@ -12,11 +12,6 @@ type FollowButtonProps = {
 export default function FollowButton({ user }: FollowButtonProps) {
   const { auth } = useApp();
 
-  if (!auth) return <></>;
-  function isFollowing() {
-    return user.following?.find((item) => item.followerId == auth.id);
-  }
-
   const follow = useMutation({
     mutationFn: postFollow,
     onSuccess: async () => {
@@ -36,6 +31,11 @@ export default function FollowButton({ user }: FollowButtonProps) {
       await queryClient.invalidateQueries({ queryKey: ["like"] });
     },
   });
+
+  if (!auth) return <></>;
+  function isFollowing() {
+    return user.following?.find((item) => item.followerId == auth.id);
+  }
   return auth.id === user.id ? (
     <></>
   ) : (

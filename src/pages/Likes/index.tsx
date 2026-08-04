@@ -3,6 +3,7 @@ import UserList from "../../components/UserList";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchLikesOrComment } from "../../lib/fetcher";
+import Loading from "../../components/Loading";
 
 export default function Likes() {
   const { id, type } = useParams<{ id: string; type: "post" | "comment" }>();
@@ -22,7 +23,7 @@ export default function Likes() {
   }
 
   if (isLoading) {
-    return <Box sx={{ textAlign: "center" }}>Loading...</Box>;
+    return <Loading message="Loading users...." />;
   }
 
   return (

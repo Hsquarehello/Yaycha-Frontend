@@ -1,29 +1,29 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-import { Box, Alert } from "@mui/material";
+import { Box, Alert, Button, Typography } from "@mui/material";
 import Form from "../../components/Form";
 import Item from "../../components/Item";
 
 import { queryClient, useApp } from "../../ThemedApp";
 import type { Post } from "../../types/post";
-import { getToken, postPost } from "../../lib/fetcher";
+import {
+  getToken,
+  postPost,
+  fetchFollowingPosts,
+  fetchPosts,
+} from "../../lib/fetcher";
+import Loading from "../../components/Loading";
+import { useState } from "react";
 
 const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export default function Home() {
   const { auth, showForm, setGlobalMsg } = useApp();
-
-  const fetchPosts = async (): Promise<Post[]> => {
-    const response = await fetch(`${api}/posts`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch posts");
-    }
-    return response.json();
-  };
+  const [showLatest, setShowLatest] = useState(true);
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ["posts"],
-    queryFn: fetchPosts,
+    queryKey: ["posts", showLatest],
+    queryFn: showLatest ? fetchPosts : fetchFollowingPosts,
   });
 
   const deletePost = async (postId: number | string) => {
@@ -51,7 +51,7 @@ export default function Home() {
 
       const previousPosts = queryClient.getQueryData<Post[]>(["posts"]);
 
-      queryClient.setQueryData<Post[]>(["posts"], (old) =>
+      queryClient.setQueryData<Post[]>(["posts", showLatest], (old) =>
         old ? old.filter((item) => item.id !== id) : [],
       );
 
@@ -69,14 +69,13 @@ export default function Home() {
     },
   });
 
-
   type PostsQueryData = Post[];
 
   const add = useMutation({
     mutationFn: postPost,
     onSuccess: async (post) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
-      queryClient.setQueryData<PostsQueryData>(["posts"], (old) => {
+      queryClient.setQueryData<PostsQueryData>(["posts", showLatest], (old) => {
         return old ? [post, ...old] : [post];
       });
 
@@ -91,8 +90,25 @@ export default function Home() {
           <Alert severity="warning">{error?.message}</Alert>
         </Box>
       )}
-      {isLoading && <Box sx={{ textAlign: "center" }}>Loading...</Box>}
+      {isLoading && <Loading message="Fetching posts..." />}
       {showForm && auth && <Form add={add.mutate} />}
+      {auth && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            mb: 1,
+          }}>
+          <Button disabled={showLatest} onClick={() => setShowLatest(true)}>
+            Latest
+          </Button>
+          <Typography sx={{ color: "text.fade", fontSize: 15 }}>|</Typography>
+          <Button disabled={!showLatest} onClick={() => setShowLatest(false)}>
+            Following
+          </Button>
+        </Box>
+      )}
       {data &&
         data.map((post: Post) => {
           return (

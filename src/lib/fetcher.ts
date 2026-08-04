@@ -1,5 +1,5 @@
 import type { CommentLike } from "../types/comment";
-import type { PostLike } from "../types/post";
+import type { Post, PostLike } from "../types/post";
 import type { User } from "../types/user";
 
 const api = import.meta.env.VITE_API;
@@ -186,11 +186,25 @@ export async function deleteFollow(id: number) {
   return res.json();
 }
 
-
-export async function fetchSearch(q:string):Promise<User[]> {
- const res = await fetch(`${api}/search?q=${q}`);
- return res.json();
+export async function fetchSearch(q: string): Promise<User[]> {
+  const res = await fetch(`${api}/search?q=${q}`);
+  return res.json();
 }
 
+export const fetchPosts = async (): Promise<Post[]> => {
+    const response = await fetch(`${api}/posts`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    return response.json();
+  };
 
-
+export async function fetchFollowingPosts() {
+  const token = getToken();
+  const res = await fetch(`${api}/following/posts`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}

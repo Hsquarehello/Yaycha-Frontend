@@ -16,6 +16,7 @@ import { fetchSearch } from "../../lib/fetcher";
 import FollowButton from "../../components/FollowButton";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useNavigate } from "react-router-dom";
+import Loading from "../../components/Loading";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -47,7 +48,7 @@ export default function Search() {
         }}
       />
       {isLoading ? (
-        <Box sx={{ textAlign: "center", mt: 4 }}>Loading...</Box>
+        <Loading message="Searching users..." />
       ) : (
         <List>
           {data &&
