@@ -7,10 +7,22 @@ import {
   Add as AddIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
+  Search as SearchIcon
 } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
-  const { showForm,auth, setShowForm, mode, setMode, setShowDrawer,setGlobalMsg } = useApp();
+  const {
+    showForm,
+    auth,
+    setShowForm,
+    mode,
+    setMode,
+    setShowDrawer,
+    setGlobalMsg,
+  } = useApp();
+  const navigate = useNavigate();
+  
   return (
     <AppBar position="static">
       <Toolbar>
@@ -26,12 +38,14 @@ export default function Header() {
             color="inherit"
             onClick={() => {
               setShowForm(!showForm);
-              if(!auth){
+              if (!auth) {
                 setGlobalMsg("Please login account!");
-                
               }
             }}>
             <AddIcon />
+          </IconButton>
+          <IconButton color="inherit" onClick={() => navigate("/search")}>
+            <SearchIcon />
           </IconButton>
           {mode === "dark" ? (
             <IconButton

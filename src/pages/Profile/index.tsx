@@ -1,20 +1,22 @@
-import { Alert, Avatar, Box, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Typography, Button } from "@mui/material";
 import { pink } from "@mui/material/colors";
-import Item from "../../components/Item";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchUser, getToken, type UserForProfile } from "../../lib/fetcher";
+import { fetchUser, getToken } from "../../lib/fetcher";
 import type { Post } from "../../types/post";
 import { queryClient, useApp } from "../../ThemedApp";
+import FollowButton from "../../components/FollowButton";
+import Item from "../../components/Item";
+import type { User } from "../../types/user";
 
 const api = import.meta.env.VITE_API || "http://localhost:8000/api";
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
   const { setGlobalMsg } = useApp();
 
-  const { isLoading, isError, error, data } = useQuery<UserForProfile, Error>({
+  const { isLoading, isError, error, data } = useQuery<User, Error>({
     queryKey: [`users/${id}`],
-    queryFn: async () => fetchUser(id!),
+    queryFn: async () => fetchUser(Number(id!)),
     enabled: !!id,
   });
 
@@ -95,6 +97,9 @@ export default function Profile() {
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
             {data?.bio}
           </Typography>
+          <Button>
+            {data && <FollowButton user={data} />}
+          </Button>
         </Box>
       </Box>
 

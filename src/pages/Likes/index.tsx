@@ -5,15 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchLikesOrComment } from "../../lib/fetcher";
 
 export default function Likes() {
-  const { id, type } = useParams<{ id: string ; type: "post" | "comment" }>();
+  const { id, type } = useParams<{ id: string; type: "post" | "comment" }>();
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: [ id, type],
+    queryKey: ["like"],
     queryFn: () => fetchLikesOrComment(id!, type!),
     enabled: Boolean(id && type),
   });
-
-  
 
   if (isError) {
     return (

@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Comments from "../pages/Comments";
 import Profile from "../pages/Profile";
 import Likes from "../pages/Likes";
+import Search from "../pages/Search";
 
 export const routes = [
    {
@@ -29,5 +30,9 @@ export const routes = [
    {
       path: "/likes/:id/:type",
       element: <Likes />
+   },
+   {
+      path: "/search",
+      element: <Search />
    }
 ]
