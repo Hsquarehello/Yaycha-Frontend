@@ -1,4 +1,4 @@
-import { Alert, Avatar, Box, Typography, Button } from "@mui/material";
+import { Alert, Avatar, Box, Typography } from "@mui/material";
 import { pink } from "@mui/material/colors";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -98,7 +98,7 @@ export default function Profile() {
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
             {data?.bio}
           </Typography>
-          <Button>{data && <FollowButton user={data} />}</Button>
+          <Box>{data && <FollowButton user={data} />}</Box>
         </Box>
       </Box>
 

@@ -43,7 +43,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["posts"] });
       queryClient.refetchQueries({ queryKey: ["comments"] });
-      queryClient.refetchQueries({ queryKey: [`users/${auth.id}`] });
+      queryClient.refetchQueries({ queryKey: [`users/${item.user?.id}`] });
     },
   });
 
@@ -52,7 +52,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["posts"] });
       queryClient.refetchQueries({ queryKey: ["comments"] });
-      queryClient.refetchQueries({ queryKey: [`users/${auth.id}`] });
+      queryClient.refetchQueries({ queryKey: [`users/${item.user?.id}`] });
     },
   });
 

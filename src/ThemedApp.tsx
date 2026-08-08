@@ -24,6 +24,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Template from "./Template";
 import { routes } from "./routes/routes";
 import { fetchVerify } from "./lib/fetcher";
+import type { User } from "./types/user";
 
 // define AppContexType
 type AppContextType = {
@@ -71,7 +72,7 @@ export default function ThemedApp() {
   const [mode, setMode] = useState<"light" | "dark">("dark");
   const [showDrawer, setShowDrawer] = useState(false);
   const [globalMsg, setGlobalMsg] = useState<string | null>(null);
-  const [auth, setAuth] = useState(null);
+  const [auth, setAuth] = useState<User | null>(null);
 
   useEffect(() => {
     fetchVerify().then((user) => {

@@ -6,7 +6,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Post } from "../../types/post.js";
 import { useParams } from "react-router-dom";
 import { getToken, postComment } from "../../lib/fetcher.js";
-import type { Comment as CommentOfPost} from "../../types/comment.js";
+import type { Comment as CommentOfPost } from "../../types/comment.js";
 import Loading from "../../components/Loading.js";
 
 const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
@@ -16,7 +16,8 @@ export default function Comments() {
   const { id } = useParams<{ id: string }>();
   const commentInput = useRef<HTMLTextAreaElement>(null);
 
-  const fetchPost = async ():Promise<Post> => {
+  const fetchPost = async (): Promise<Post> => {
+    if (!id) throw new Error("Post ID is missing");
     const response = await fetch(`${api}/posts/${id}`);
     if (!response.ok) {
       throw new Error("Failed to fetch comments");
@@ -25,8 +26,9 @@ export default function Comments() {
   };
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ["comments"],
+    queryKey: ["comments", id],
     queryFn: fetchPost,
+    enabled: Boolean(id),
   });
 
   interface CommentsQueryData {
@@ -45,29 +47,32 @@ export default function Comments() {
 
     onSuccess: async (newComment) => {
       // Cache ထဲမှာ ပြိုင်တူ update လုပ်နေတာတွေကို ခေတ္တ ရပ်တန့်ခြင်း
-      await queryClient.cancelQueries({ queryKey: ["comments"] });
+      await queryClient.cancelQueries({ queryKey: ["comments", id] });
 
       // Immutable နည်းလမ်းဖြင့် Safe ဖြစ်အောင် Update လုပ်ခြင်း
-      queryClient.setQueryData<CommentsQueryData>(["comments"], (oldData) => {
-        // oldData မရှိသေးပါက Object သစ်တစ်ခု အသစ်ဖန်တီးပေးခြင်း
-        if (!oldData) {
-          return {
-            comments: [newComment],
-          };
-        }
+      queryClient.setQueryData<CommentsQueryData>(
+        ["comments", id],
+        (oldData) => {
+          // oldData မရှိသေးပါက Object သစ်တစ်ခု အသစ်ဖန်တီးပေးခြင်း
+          if (!oldData) {
+            return {
+              comments: [newComment],
+            };
+          }
 
-        // State ကို Direct Mutate မလုပ်ဘဲ Object/Array သစ်ပွားပြီး Return ပြန်ခြင်း (Immutable Pattern)
-        return {
-          ...oldData,
-          comments: [...oldData.comments, newComment],
-        };
-      });
+          // State ကို Direct Mutate မလုပ်ဘဲ Object/Array သစ်ပွားပြီး Return ပြန်ခြင်း (Immutable Pattern)
+          return {
+            ...oldData,
+            comments: [...oldData.comments, newComment],
+          };
+        },
+      );
 
       setGlobalMsg("A comment added");
     },
   });
 
-  const deleteComment = async (commentId: number | string): Promise<void> => {
+  const deleteComment = async (commentId: number | string) => {
     const token = getToken();
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -83,7 +88,6 @@ export default function Comments() {
     if (!response.ok) {
       throw new Error("Failed to remove comment");
     }
-    return response.json();
   };
 
   const handleRemove = useMutation({
@@ -100,9 +104,16 @@ export default function Comments() {
     if (!contentText) return;
     if (!id) return;
 
-    addComment.mutate({ content: contentText, postId: id });
-    e.currentTarget.reset();
-    setGlobalMsg("Comment added");
+    addComment.mutate(
+      { content: contentText, postId: id },
+      {
+        onSuccess: () => {
+          if (commentInput.current) {
+            commentInput.current.value = "";
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -112,7 +123,7 @@ export default function Comments() {
           <Alert severity="warning">{error?.message}</Alert>
         </Box>
       )}
-      {isLoading && <Loading message="Loading comments..."/>}
+      {isLoading && <Loading message="Loading comments..." />}
 
       {/* Comment များကို Array map လုပ်ပြီး ပြသခြင်း */}
       {data &&
@@ -132,9 +143,13 @@ export default function Comments() {
             multiline
             placeholder="Your Comment"
             fullWidth
+            disabled={addComment.isPending}
           />
-          <Button type="submit" variant="contained">
-            Reply
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={addComment.isPending}>
+            {addComment.isPending ? "Replying..." : "Reply"}
           </Button>
         </Box>
       </form>

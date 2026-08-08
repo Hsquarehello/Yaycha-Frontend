@@ -1,4 +1,4 @@
-import type { CommentLike } from "../types/comment";
+import type { Comment, CommentLike } from "../types/comment";
 import type { Post, PostLike } from "../types/post";
 import type { User } from "../types/user";
 
@@ -9,40 +9,12 @@ export const getToken = (): string | null => {
   return localStorage.getItem("token");
 };
 
-export async function postUser(data: User) {
-  const res = await fetch(`${api}/users`, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
-}
-
-export async function postLogin(username: string, password: string) {
-  const res = await fetch(`${api}/users/login`, {
-    method: "POST",
-    body: JSON.stringify({ username, password }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Incorrect username or password");
-}
-
-// 2. Async Function တွင် Parameter Type နှင့် Return Type အတိအကျ သတ်မှတ်ပါ
-export async function fetchUser(id: number): Promise<User> {
+// Fetch Helper
+async function fetchClient<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
   const token = getToken();
-
-  // Header options များကို dynamic သတ်မှတ်ခြင်း
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -51,160 +23,101 @@ export async function fetchUser(id: number): Promise<User> {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${api}/users/${id}`, {
-    method: "GET",
+  const response = await fetch(`${api}${endpoint}`, {
+    ...options,
     headers,
   });
 
-  // 3. HTTP Error များကို စစ်ဆေးပါ (res.ok က 200-299 Status မဟုတ်ပါက false ဖြစ်မည်)
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.msg || `Failed to fetch user with status: ${res.status}`,
+      errorData.msg ||
+        errorData.message ||
+        `Request failed with status: ${response.status}`,
     );
   }
 
-  // 4. Response JSON ကို User Type အဖြစ် Return ပြန်ပေးခြင်း
-  const data: User = await res.json();
-  return data;
+  return response.json();
 }
 
-export async function fetchVerify() {
-  const token = getToken();
-  const res = await fetch(`${api}/verify`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+// User APIs
+export async function postUser(data: User) {
+  return fetchClient("users", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
-  if (res.ok) {
-    return res.json();
-  }
-  return;
+}
+
+export async function postLogin(username: string, password: string) {
+  return fetchClient<{ token: string; user: User }>("/users/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+}
+
+export async function fetchUser(id: number): Promise<User> {
+  return fetchClient<User>(`/users/${id}`, { method: "GET" });
+}
+
+export async function fetchVerify(): Promise<User | null> {
+  return fetchClient<User>("/verify", { method: "GET" });
+}
+
+export async function fetchSearch(q: string): Promise<User[]> {
+  return fetchClient<User[]>(`/search?q=${encodeURIComponent(q)}`);
+}
+
+// Post APIs
+export const fetchPosts = async (): Promise<Post[]> => {
+  return fetchClient<Post[]>("/posts");
+};
+
+export async function fetchFollowingPosts() {
+  return fetchClient<Post[]>("/following/posts", { method: "GET" });
 }
 
 export async function postPost(content: string) {
-  const token = getToken();
-  const res = await fetch(`${api}/posts`, {
+  return fetchClient<Post>("/posts", {
     method: "POST",
     body: JSON.stringify({ content }),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
   });
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
 }
 
+// Comment APIs
 export async function postComment(content: string, postId: string) {
-  const token = getToken();
-  const res = await fetch(`${api}/comments`, {
+  return fetchClient<Comment>("/comments", {
     method: "POST",
     body: JSON.stringify({ content, postId }),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
   });
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
 }
 
+// Like APIs
 export async function postLike(id: number | string, type: "post" | "comment") {
-  const token = getToken();
-  const res = await fetch(
-    `${api}/${type === "post" ? "posts" : "comments"}/like/${id}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
+  const endpoint = `/${type === "post" ? "posts" : "comments"}/like/${id}`;
+  return fetchClient(endpoint, { method: "POST" });
 }
 
 export async function deleteLike(
   id: number | string,
   type: "post" | "comment",
 ) {
-  const token = getToken();
-  const res = await fetch(
-    `${api}/${type === "post" ? "posts" : "comments"}/unlike/${id}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
+  const endpoint = `/${type === "post" ? "posts" : "comments"}/unlike/${id}`;
+  return fetchClient(endpoint, { method: "DELETE" });
 }
 
 export async function fetchLikesOrComment(
   id: number | string,
   type: "post" | "comment",
 ): Promise<PostLike[] | CommentLike[]> {
-  const res = await fetch(
-    `${api}/${type === "post" ? "posts" : "comments"}/like/${id}`,
-  );
-  if (res.ok) {
-    return res.json();
-  }
-  throw new Error("Error: Check Network Log");
+  const endpoint = `/${type === "post" ? "posts" : "comments"}/like/${id}`;
+  return fetchClient<PostLike[] | CommentLike[]>(endpoint);
 }
 
+// Follow APIs
 export async function postFollow(id: number) {
-  const token = getToken();
-  const res = await fetch(`${api}/follow/${id}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
+  return fetchClient(`/follow/${id}`, { method: "POST" });
 }
 
 export async function deleteFollow(id: number) {
-  const token = getToken();
-  const res = await fetch(`${api}/unfollow/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
-}
-
-export async function fetchSearch(q: string): Promise<User[]> {
-  const res = await fetch(`${api}/search?q=${q}`);
-  return res.json();
-}
-
-export const fetchPosts = async (): Promise<Post[]> => {
-    const response = await fetch(`${api}/posts`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch posts");
-    }
-    return response.json();
-  };
-
-export async function fetchFollowingPosts() {
-  const token = getToken();
-  const res = await fetch(`${api}/following/posts`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
+  return fetchClient(`/unfollow/${id}`, { method: "DELETE" });
 }

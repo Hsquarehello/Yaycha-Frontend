@@ -28,7 +28,10 @@ export default function AppDrawer() {
   const navigate = useNavigate();
   return (
     <div>
-      <Drawer open={showDrawer} onClose={() => setShowDrawer(false)}>
+      <Drawer
+        disableRestoreFocus
+        open={showDrawer}
+        onClose={() => setShowDrawer(false)}>
         <Box
           sx={{
             mb: 6,
@@ -86,7 +89,7 @@ export default function AppDrawer() {
                     localStorage.removeItem("token");
                     setAuth(null);
                     setShowDrawer(false);
-                    setGlobalMsg("Logged out!")
+                    setGlobalMsg("Logged out!");
                     navigate("/");
                   }}>
                   <ListItemIcon>

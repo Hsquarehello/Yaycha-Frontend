@@ -10,8 +10,7 @@ import { useApp } from "../../ThemedApp";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setAuth, setShowDrawer } = useApp();
-  setShowDrawer(false);
+  const { setAuth } = useApp();
 
   const usernameInput = useRef<HTMLInputElement>(null);
   const passwordInput = useRef<HTMLInputElement>(null);

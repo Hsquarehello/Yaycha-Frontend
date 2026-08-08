@@ -5,9 +5,9 @@ import AppDrawer from "./components/AppDrawer";
 import { useApp } from "./ThemedApp";
 
 export default function Template() {
-  const { globalMsg, setGlobalMsg } = useApp();
+  const { globalMsg, setGlobalMsg, showDrawer } = useApp();
   return (
-    <Box>
+    <Box inert={showDrawer ? true : undefined}>
       <Header />
       <AppDrawer />
       <Container maxWidth="sm" sx={{ mt: 4 }}>
