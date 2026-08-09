@@ -7,51 +7,35 @@ import Item from "../../components/Item";
 import { queryClient, useApp } from "../../ThemedApp";
 import type { Post } from "../../types/post";
 import {
-  getToken,
   postPost,
   fetchFollowingPosts,
   fetchPosts,
+  deletePost,
 } from "../../lib/fetcher";
 import Loading from "../../components/Loading";
 import { useState } from "react";
 
-const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+// const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 export default function Home() {
   const { auth, showForm, setGlobalMsg } = useApp();
   const [showLatest, setShowLatest] = useState(true);
 
+  const queryKey = ["posts", showLatest]
+
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ["posts", showLatest],
+    queryKey,
     queryFn: showLatest ? fetchPosts : fetchFollowingPosts,
   });
-
-  const deletePost = async (postId: number | string) => {
-    const token = getToken();
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${api}/posts/${postId}`, {
-      method: "DELETE",
-      headers,
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete post");
-    }
-  };
 
   const handleRemove = useMutation({
     mutationFn: deletePost,
     onMutate: (id: string | number) => {
-      queryClient.cancelQueries({ queryKey: ["posts"] });
+      queryClient.cancelQueries({ queryKey});
 
-      const previousPosts = queryClient.getQueryData<Post[]>(["posts"]);
+      const previousPosts = queryClient.getQueryData<Post[]>(queryKey);
 
-      queryClient.setQueryData<Post[]>(["posts", showLatest], (old) =>
+      queryClient.setQueryData<Post[]>(queryKey, (old) =>
         old ? old.filter((item) => item.id !== id) : [],
       );
 
@@ -65,7 +49,7 @@ export default function Home() {
       setGlobalMsg("Failed to delete post");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -74,8 +58,8 @@ export default function Home() {
   const add = useMutation({
     mutationFn: postPost,
     onSuccess: async (post) => {
-      await queryClient.cancelQueries({ queryKey: ["posts"] });
-      queryClient.setQueryData<PostsQueryData>(["posts", showLatest], (old) => {
+      await queryClient.cancelQueries({ queryKey });
+      queryClient.setQueryData<PostsQueryData>(queryKey, (old) => {
         return old ? [post, ...old] : [post];
       });
 
@@ -112,7 +96,7 @@ export default function Home() {
       {data &&
         data.map((post: Post) => {
           return (
-            <Item key={post.id} item={post} remove={handleRemove.mutate} />
+            <Item key={post.id} item={post} remove={id => handleRemove.mutate(id)} />
           );
         })}
     </Box>

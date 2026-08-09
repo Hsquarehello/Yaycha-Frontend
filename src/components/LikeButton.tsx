@@ -43,7 +43,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["posts"] });
       queryClient.refetchQueries({ queryKey: ["comments"] });
-      queryClient.refetchQueries({ queryKey: [`users/${item.user?.id}`] });
+      queryClient.refetchQueries({ queryKey: [`users`, item.user?.id] });
     },
   });
 
@@ -52,7 +52,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["posts"] });
       queryClient.refetchQueries({ queryKey: ["comments"] });
-      queryClient.refetchQueries({ queryKey: [`users/${item.user?.id}`] });
+      queryClient.refetchQueries({ queryKey: ["users", item.user?.id] });
     },
   });
 
@@ -60,6 +60,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
     <ButtonGroup>
       {isLiked() ? (
         <IconButton
+          disabled={likeItem.isPending}
           size="small"
           onClick={(e) => {
             unlikeItem.mutate({ id: item.id, type: item.type });
@@ -69,6 +70,7 @@ export default function LikeButton({ item }: LikeButtonProps) {
         </IconButton>
       ) : (
         <IconButton
+          disabled={unlikeItem.isPending}
           size="small"
           onClick={(e) => {
             likeItem.mutate({ id: item.id, type: item.type });

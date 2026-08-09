@@ -1,6 +1,6 @@
 import type { Comment, CommentLike } from "../types/comment";
 import type { Post, PostLike } from "../types/post";
-import type { User } from "../types/user";
+import type { RegisterUser, User } from "../types/user";
 
 const api = import.meta.env.VITE_API;
 
@@ -41,7 +41,7 @@ async function fetchClient<T>(
 }
 
 // User APIs
-export async function postUser(data: User) {
+export async function postUser(data: RegisterUser): Promise<User> {
   return fetchClient("users", {
     method: "POST",
     body: JSON.stringify(data),
@@ -72,6 +72,12 @@ export const fetchPosts = async (): Promise<Post[]> => {
   return fetchClient<Post[]>("/posts");
 };
 
+export const fetchPostsByUserId = async (
+  userId: string | number,
+): Promise<Post[]> => {
+  return fetchClient<Post[]>(`/posts/users/${userId}`);
+};
+
 export async function fetchFollowingPosts() {
   return fetchClient<Post[]>("/following/posts", { method: "GET" });
 }
@@ -83,11 +89,23 @@ export async function postPost(content: string) {
   });
 }
 
+export async function deletePost(id: string | number) {
+  fetchClient(`/posts/${id}`, {
+    method: "DELETE",
+  });
+}
+
 // Comment APIs
 export async function postComment(content: string, postId: string) {
   return fetchClient<Comment>("/comments", {
     method: "POST",
     body: JSON.stringify({ content, postId }),
+  });
+}
+
+export async function deleteComment(id: string | number) {
+  fetchClient(`/comments/${id}`, {
+    method: "DELETE",
   });
 }
 

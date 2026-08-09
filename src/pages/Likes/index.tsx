@@ -9,8 +9,11 @@ export default function Likes() {
   const { id, type } = useParams<{ id: string; type: "post" | "comment" }>();
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ["like"],
-    queryFn: () => fetchLikesOrComment(id!, type!),
+    queryKey: ["likes"],
+    queryFn: () => {
+      if (!id || !type) throw new Error("Missing required parameters.");
+      return fetchLikesOrComment(id, type);
+    },
     enabled: Boolean(id && type),
   });
 
@@ -28,7 +31,7 @@ export default function Likes() {
 
   return (
     <Box>
-      <UserList title="Likes" data={data} />
+      <UserList title="Likes" data={data ?? []} />
     </Box>
   );
 }

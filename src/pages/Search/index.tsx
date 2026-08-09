@@ -9,6 +9,7 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   TextField,
+  Typography,
 } from "@mui/material";
 import { useState, type ChangeEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -29,45 +30,55 @@ export default function Search() {
     enabled: Boolean(debouncedQuery),
   });
 
-  if (isError) {
-    return (
-      <Box>
-        <Alert severity="warning">{error.message}</Alert>
-      </Box>
-    );
-  }
-
   return (
     <Box>
       <TextField
         fullWidth={true}
         variant="outlined"
         placeholder="Search user"
+        value={query}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           setQuery(e.target.value);
         }}
       />
-      {isLoading ? (
-        <Loading message="Searching users..." />
-      ) : (
+
+      {isError && (
+        <Box>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            {error instanceof Error ? error.message : "An error occurred"}
+          </Alert>
+        </Box>
+      )}
+
+      {isLoading && <Loading message="Searching Users..." />}
+
+      {!isLoading && !isError && debouncedQuery && data?.length === 0 && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 2, textAlign: "center" }}>
+          No users found.
+        </Typography>
+      )}
+
+      {!isLoading && data && data.length > 0 && (
         <List>
-          {data &&
-            data.map((user) => {
-              return (
-                <ListItem key={user.id}>
-                  <ListItemButton
-                    onClick={() => navigate(`/profile/${user.id}`)}>
-                    <ListItemAvatar>
-                      <Avatar />
-                    </ListItemAvatar>
-                    <ListItemText primary={user.name} secondary={user.bio} />
-                    <ListItemSecondaryAction>
-                      <FollowButton user={user} />
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
+          {data.map((user) => {
+            return (
+              <ListItem key={user.id}>
+                <ListItemButton onClick={() => navigate(`/profile/${user.id}`)}>
+                  <ListItemAvatar>
+                    <Avatar />
+                  </ListItemAvatar>
+                  <ListItemText primary={user.name} secondary={user.bio} />
+                </ListItemButton>
+                
+                <ListItemSecondaryAction>
+                  <FollowButton user={user} />
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
         </List>
       )}
     </Box>

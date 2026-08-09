@@ -2,7 +2,7 @@ import { Alert, Avatar, Box, Typography } from "@mui/material";
 import { pink } from "@mui/material/colors";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchUser, getToken } from "../../lib/fetcher";
+import { deletePost, fetchPostsByUserId, fetchUser } from "../../lib/fetcher";
 import type { Post } from "../../types/post";
 import { queryClient, useApp } from "../../ThemedApp";
 import FollowButton from "../../components/FollowButton";
@@ -10,44 +10,42 @@ import Item from "../../components/Item";
 import type { User } from "../../types/user";
 import Loading from "../../components/Loading";
 
-const api = import.meta.env.VITE_API || "http://localhost:8000/api";
 export default function Profile() {
-  const { id } = useParams<{ id: string }>();
+  const { id: userId } = useParams<{ id: string }>();
   const { setGlobalMsg } = useApp();
 
-  const { isLoading, isError, error, data } = useQuery<User, Error>({
-    queryKey: [`users/${id}`],
-    queryFn: async () => fetchUser(Number(id!)),
-    enabled: !!id,
+  const userQueryKey = ["users", Number(userId)];
+
+  const {
+    isLoading: userLoading,
+    isError: isUserError,
+    error: userError,
+    data: user,
+  } = useQuery<User, Error>({
+    queryKey: userQueryKey,
+    queryFn: async () => {
+      if (!userId) throw new Error("User ID is missing");
+      return fetchUser(Number(userId));
+    },
+    enabled: !!userId,
   });
 
-  const deletePost = async (postId: number | string) => {
-    const token = getToken();
-
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    const response = await fetch(`${api}/posts/${postId}`, {
-      method: "DELETE",
-      headers,
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete post");
-    }
-  };
+  const postQueryKey = ["posts", userId];
+  const { data: posts, isLoading: postsLoading } = useQuery<Post[], Error>({
+    queryKey: postQueryKey,
+    queryFn: () => fetchPostsByUserId(userId!),
+    enabled: !!userId,
+  });
 
   const handleRemove = useMutation({
     mutationFn: deletePost,
-    onMutate: (id: string | number) => {
-      queryClient.cancelQueries({ queryKey: [`users/${id}`] });
+    onMutate: (postId: string | number) => {
+      queryClient.cancelQueries({ queryKey: postQueryKey });
 
-      const previousPosts = queryClient.getQueryData<Post[]>([`users/${id}`]);
+      const previousPosts = queryClient.getQueryData<Post[]>(postQueryKey);
 
-      queryClient.setQueryData<Post[]>([`users/${id}`], (old) =>
-        old ? old.filter((item) => item.id !== id) : [],
+      queryClient.setQueryData<Post[]>(postQueryKey, (old) =>
+        old ? old.filter((item) => item.id !== postId) : [],
       );
 
       setGlobalMsg("Post removed successfully.");
@@ -55,24 +53,24 @@ export default function Profile() {
     },
     onError: (_err, _id, context) => {
       if (context?.previousPosts) {
-        queryClient.setQueryData([`users/${id}`], context.previousPosts);
+        queryClient.setQueryData(postQueryKey, context.previousPosts);
       }
       setGlobalMsg("Failed to delete post");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: [`users/${id}`] });
+      queryClient.invalidateQueries({ queryKey: postQueryKey });
     },
   });
 
-  if (isError) {
+  if (isUserError) {
     return (
       <Box>
-        <Alert severity="warning">{error.message}</Alert>
+        <Alert severity="warning">{userError.message}</Alert>
       </Box>
     );
   }
 
-  if (isLoading) {
+  if (userLoading) {
     return <Loading message="Loading data..." />;
   }
 
@@ -94,31 +92,29 @@ export default function Profile() {
         }}>
         <Avatar sx={{ width: 100, height: 100, bgcolor: pink[500] }} />
         <Box sx={{ textAlign: "center" }}>
-          <Typography>{data?.username}</Typography>
+          <Typography>{user?.username}</Typography>
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
-            {data?.bio}
+            {user?.bio}
           </Typography>
-          <Box>{data && <FollowButton user={data} />}</Box>
+          <Box>{user && <FollowButton user={user} />}</Box>
         </Box>
       </Box>
 
       {/* User Post Item */}
-      {data &&
-        data.posts?.map((post: Post) => (
+
+      {postsLoading && <Loading message="Getting User's Posts" />}
+      {!postsLoading && posts?.length === 0 && (
+        <Typography align="center" color="text.secondary" sx={{ mt: 2 }}>
+          No posts found.
+        </Typography>
+      )}
+      {posts &&
+        posts.length > 0 &&
+        posts?.map((post: Post) => (
           <Item
             key={post.id}
-            item={{
-              ...post,
-              user: {
-                username: data.username,
-                id: data.id,
-                name: data.name,
-                follower: data.follower,
-                following: data.following,
-              },
-              comments: data.comments,
-            }}
-            remove={handleRemove.mutate}
+            item={post}
+            remove={() => handleRemove.mutate(post.id)}
           />
         ))}
     </Box>

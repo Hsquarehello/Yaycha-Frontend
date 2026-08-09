@@ -5,7 +5,7 @@ import { queryClient, useApp } from "../../ThemedApp";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { Post } from "../../types/post.js";
 import { useParams } from "react-router-dom";
-import { getToken, postComment } from "../../lib/fetcher.js";
+import { deleteComment, postComment } from "../../lib/fetcher.js";
 import type { Comment as CommentOfPost } from "../../types/comment.js";
 import Loading from "../../components/Loading.js";
 
@@ -71,24 +71,6 @@ export default function Comments() {
       setGlobalMsg("A comment added");
     },
   });
-
-  const deleteComment = async (commentId: number | string) => {
-    const token = getToken();
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${api}/comments/${commentId}`, {
-      method: "DELETE",
-      headers,
-    });
-    if (!response.ok) {
-      throw new Error("Failed to remove comment");
-    }
-  };
 
   const handleRemove = useMutation({
     mutationFn: deleteComment,
