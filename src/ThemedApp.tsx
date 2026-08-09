@@ -1,9 +1,13 @@
 import { createContext, useContext, useState, useMemo, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-
 import { deepPurple, grey } from "@mui/material/colors";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Template from "./Template";
+import { routes } from "./routes/routes";
+import { fetchVerify } from "./lib/fetcher";
+import type { User } from "./types/user";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 declare module "@mui/material/styles" {
   // palette.banner အတွက်
@@ -19,13 +23,6 @@ declare module "@mui/material/styles" {
   }
 }
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
-import Template from "./Template";
-import { routes } from "./routes/routes";
-import { fetchVerify } from "./lib/fetcher";
-import type { User } from "./types/user";
-
 // define AppContexType
 type AppContextType = {
   showForm: boolean;
@@ -36,8 +33,8 @@ type AppContextType = {
   setShowDrawer: React.Dispatch<React.SetStateAction<boolean>>;
   globalMsg: string | null;
   setGlobalMsg: React.Dispatch<React.SetStateAction<string | null>>;
-  auth: any;
-  setAuth: React.Dispatch<React.SetStateAction<any>>;
+  auth: User | null;
+  setAuth: React.Dispatch<React.SetStateAction<User | null>>;
 };
 
 export const queryClient = new QueryClient();
@@ -69,10 +66,17 @@ const router = createBrowserRouter([
 
 export default function ThemedApp() {
   const [showForm, setShowForm] = useState(false);
-  const [mode, setMode] = useState<"light" | "dark">("dark");
+  const [mode, setMode] = useState<"light" | "dark">(() => {
+    const savedMode = localStorage.getItem("themeMode");
+    return (savedMode as "light" | "dark") || "dark";
+  });
   const [showDrawer, setShowDrawer] = useState(false);
   const [globalMsg, setGlobalMsg] = useState<string | null>(null);
   const [auth, setAuth] = useState<User | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("themeMode", mode);
+  }, [mode]);
 
   useEffect(() => {
     fetchVerify().then((user) => {
@@ -93,37 +97,31 @@ export default function ThemedApp() {
     });
   }, [mode]);
 
+  const appContextValue = useMemo(
+    () => ({
+      showForm,
+      setShowForm,
+      mode,
+      setMode,
+      showDrawer,
+      setShowDrawer,
+      globalMsg,
+      setGlobalMsg,
+      auth,
+      setAuth,
+    }),
+    [showForm, mode, showDrawer, globalMsg, auth],
+  );
+
   return (
     <ThemeProvider theme={theme}>
-      <AppContext.Provider
-        value={{
-          showForm,
-          setShowForm,
-          mode,
-          setMode,
-          showDrawer,
-          setShowDrawer,
-          globalMsg,
-          setGlobalMsg,
-          auth,
-          setAuth,
-        }}>
+      <AppContext.Provider value={appContextValue}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <CssBaseline />
       </AppContext.Provider>
     </ThemeProvider>
   );
 }
-
-// TypeScript only:
-declare global {
-  interface Window {
-    __TANSTACK_QUERY_CLIENT__:
-      import('@tanstack/query-core')
-        .QueryClient
-  }
-}
-
-window.__TANSTACK_QUERY_CLIENT__ = queryClient

@@ -13,15 +13,16 @@ import {
   deletePost,
 } from "../../lib/fetcher";
 import Loading from "../../components/Loading";
-import { useState } from "react";
-
-// const api = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { auth, showForm, setGlobalMsg } = useApp();
   const [showLatest, setShowLatest] = useState(true);
+  const queryKey = ["posts", showLatest];
 
-  const queryKey = ["posts", showLatest]
+  useEffect(() => {
+    if (!auth) setShowLatest(true);
+  }, [auth]);
 
   const { isLoading, isError, error, data } = useQuery({
     queryKey,
@@ -31,7 +32,7 @@ export default function Home() {
   const handleRemove = useMutation({
     mutationFn: deletePost,
     onMutate: (id: string | number) => {
-      queryClient.cancelQueries({ queryKey});
+      queryClient.cancelQueries({ queryKey });
 
       const previousPosts = queryClient.getQueryData<Post[]>(queryKey);
 
@@ -44,7 +45,7 @@ export default function Home() {
     },
     onError: (_err, _id, context) => {
       if (context?.previousPosts) {
-        queryClient.setQueryData(["posts"], context.previousPosts);
+        queryClient.setQueryData(queryKey, context.previousPosts);
       }
       setGlobalMsg("Failed to delete post");
     },
@@ -96,7 +97,11 @@ export default function Home() {
       {data &&
         data.map((post: Post) => {
           return (
-            <Item key={post.id} item={post} remove={id => handleRemove.mutate(id)} />
+            <Item
+              key={post.id}
+              item={post}
+              remove={(id) => handleRemove.mutate(id)}
+            />
           );
         })}
     </Box>
