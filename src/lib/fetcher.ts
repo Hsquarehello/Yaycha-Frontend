@@ -1,4 +1,5 @@
 import type { Comment, CommentLike } from "../types/comment";
+import type { Noti } from "../types/noti";
 import type { Post, PostLike } from "../types/post";
 import type { RegisterUser, User } from "../types/user";
 
@@ -42,7 +43,7 @@ async function fetchClient<T>(
 
 // User APIs
 export async function postUser(data: RegisterUser): Promise<User> {
-  return fetchClient("users", {
+  return fetchClient("/users", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -138,4 +139,23 @@ export async function postFollow(id: number) {
 
 export async function deleteFollow(id: number) {
   return fetchClient(`/unfollow/${id}`, { method: "DELETE" });
+}
+
+// Notification APIs
+export async function fetchNotis(): Promise<Noti[]> {
+  return fetchClient("/notis", {
+    method: "GET",
+  });
+}
+
+export async function putAllNotisRead() {
+  return fetchClient("/notis", {
+    method: "PUT",
+  });
+}
+
+export async function putNotiRead(id: string | number) {
+  return fetchClient(`/notis/${id}/read`, {
+    method: "PUT",
+  });
 }

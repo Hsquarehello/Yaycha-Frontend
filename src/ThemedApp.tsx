@@ -8,6 +8,7 @@ import { routes } from "./routes/routes";
 import { fetchVerify } from "./lib/fetcher";
 import type { User } from "./types/user";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import AppSocket from "./AppSocket";
 
 declare module "@mui/material/styles" {
   // palette.banner အတွက်
@@ -118,6 +119,7 @@ export default function ThemedApp() {
       <AppContext.Provider value={appContextValue}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <AppSocket />
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <CssBaseline />

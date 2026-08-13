@@ -1,15 +1,27 @@
 import { useApp } from "../ThemedApp";
 
-import { Box, AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+import {
+  Box,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Badge,
+} from "@mui/material";
 
 import {
   Menu as MenuIcon,
   Add as AddIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Notifications as NotiIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotis } from "../lib/fetcher";
+import type { Noti } from "../types/noti";
+import { useMemo } from "react";
 
 export default function Header() {
   const {
@@ -22,7 +34,26 @@ export default function Header() {
     setGlobalMsg,
   } = useApp();
   const navigate = useNavigate();
-  
+
+  const { data } = useQuery<Noti[]>({
+    queryKey: ["notis"],
+    queryFn: fetchNotis,
+    enabled: !!auth,
+  });
+
+  const unreadCount = useMemo(() => {
+    if (!auth || !data) return 0;
+    return data.filter((noti) => !noti.read).length;
+  }, [auth, data]);
+
+  const handleAddClick = () => {
+    if (!auth) {
+      setGlobalMsg("Please login account!");
+      return;
+    }
+    setShowForm(!showForm);
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -32,36 +63,38 @@ export default function Header() {
           onClick={() => setShowDrawer(true)}>
           <MenuIcon />
         </IconButton>
-        <Typography sx={{ flexGrow: 1, ml: 2 }}>Yaycha</Typography>
-        <Box>
-          <IconButton
-            color="inherit"
-            onClick={() => {
-              setShowForm(!showForm);
-              if (!auth) {
-                setGlobalMsg("Please login account!");
-              }
-            }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ flexGrow: 1, ml: 2, cursor: "pointer" }}
+          onClick={() => navigate("/")}>
+          Yaycha
+        </Typography>
+
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton color="inherit" onClick={handleAddClick}>
             <AddIcon />
           </IconButton>
           <IconButton color="inherit" onClick={() => navigate("/search")}>
             <SearchIcon />
           </IconButton>
-          {mode === "dark" ? (
-            <IconButton
-              color="inherit"
-              edge="end"
-              onClick={() => setMode("light")}>
-              <LightModeIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              color="inherit"
-              edge="end"
-              onClick={() => setMode("dark")}>
-              <DarkModeIcon />
+          {auth && (
+            <IconButton color="inherit" onClick={() => navigate("/notis")}>
+              <Badge
+                color="error"
+                badgeContent={unreadCount}
+                max={99}
+                invisible={unreadCount === 0}>
+                <NotiIcon />
+              </Badge>
             </IconButton>
           )}
+          <IconButton
+            color="inherit"
+            edge="end"
+            onClick={() => setMode(mode === "dark" ? "light" : "dark")}>
+            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
         </Box>
       </Toolbar>
     </AppBar>
