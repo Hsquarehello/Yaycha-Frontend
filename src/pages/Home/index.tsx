@@ -31,8 +31,8 @@ export default function Home() {
 
   const handleRemove = useMutation({
     mutationFn: deletePost,
-    onMutate: (id: string | number) => {
-      queryClient.cancelQueries({ queryKey });
+    onMutate: async (id: string | number) => {
+      await queryClient.cancelQueries({ queryKey });
 
       const previousPosts = queryClient.getQueryData<Post[]>(queryKey);
 
