@@ -9,6 +9,7 @@ import {
 import {
   Favorite as FavoriteIcon,
   Comment as CommentIcon,
+  PersonAdd as PersonAddIcon,
 } from "@mui/icons-material";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +22,40 @@ interface NotiItemParams {
 
 export default function NotiItem({ noti, readNoti }: NotiItemParams) {
   const navigate = useNavigate();
+
   const formattedDate = noti.created
     ? format(new Date(noti.created), "MMM dd, yyyy")
     : "";
+
+  const sender = noti.sender;
+
+  const renderIcon = () => {
+    switch (noti.type) {
+      case "comment":
+        return <CommentIcon color="success" />;
+      case "like":
+      case "likeComment":
+        return <FavoriteIcon color="error" />;
+      case "follow":
+        return <PersonAddIcon color="primary" />;
+      default:
+        return <CommentIcon color="action" />;
+    }
+  };
+
+  const handleClick = () => {
+    if (!noti.read) {
+      readNoti(noti.id);
+    }
+
+    if (noti.type === "follow") {
+      // Follow Noti ဖြစ်ပါက Follow လုပ်သူ၏ Profile Page သို့ သွားမည်
+      navigate(`/profile/${noti.senderId}`);
+    } else if (noti.postId) {
+      // Post/Comment Noti ဖြစ်ပါက Post/Comment Page သို့ သွားမည်
+      navigate(`/comments/${noti.postId}`);
+    }
+  };
 
   return (
     <Card
@@ -33,39 +65,29 @@ export default function NotiItem({ noti, readNoti }: NotiItemParams) {
         transition: "opacity 0.2s ease-in-out",
       }}
       key={noti.id}>
-      <CardActionArea
-        onClick={() => {
-          if (!noti.read) {
-            readNoti(noti.id);
-          }
-          navigate(`/comments/${noti.postId}`);
-        }}>
+      <CardActionArea onClick={handleClick}>
         <CardContent
           sx={{
             display: "flex",
             opacity: 1,
           }}>
-          {noti.type === "comment" ? (
-            <CommentIcon color="success" />
-          ) : (
-            <FavoriteIcon color="error" />
-          )}
+          <Box sx={{ mr: 2 }}>{renderIcon()}</Box>
+
           <Box sx={{ ml: 3 }}>
-            <Avatar />
-            <Box sx={{ mt: 1 }}>
-              <Typography component="span" sx={{ mr: 1 }}>
-                <b>{noti.user?.username}</b>
+            <Avatar src={sender?.username || ""} alt={sender?.username}>
+              {sender?.username?.charAt(0).toUpperCase()}
+            </Avatar>
+
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <Typography variant="body2">
+                <b>{sender?.username}</b>{" "}
+                <Box component="span" sx={{ color: "text.secondary", ml: 0.5 }}>
+                  {noti.content}
+                </Box>
               </Typography>
-              <Typography
-                component="span"
-                sx={{
-                  mr: 1,
-                  color: "text.secondary",
-                }}>
-                {noti.content}
-              </Typography>
-              <Typography component="span" color="primary">
-                <small>{formattedDate}</small>
+
+              <Typography variant="caption" color="text.disabled">
+                {formattedDate}
               </Typography>
             </Box>
           </Box>
