@@ -1,140 +1,145 @@
 # Yaycha Project Specification
 
-## 1. Overview
+## 1. Product Summary
 
-Yaycha is a social-media style React application inspired by lightweight microblogging and social networking. Users can register, log in, create posts, like content, comment on posts, follow other users, and browse profile pages and user lists.
+Yaycha is a social-media style frontend built with React, TypeScript, Vite, and Material UI. It supports account creation, session-based authentication, post creation, follow relationships, likes, comments, user search, notifications, and profile browsing.
 
-The frontend is built with React, TypeScript, Vite, and Material UI. It uses React Router for navigation and React Query for data fetching and mutation state management.
+The application is designed as a lightweight social platform for a backend-driven API environment. Its primary goal is to provide a polished frontend experience for managing social activity without requiring a complex backend implementation in the repo itself.
 
-## 2. Product Goals
+## 2. Goals
 
-- Allow users to create a personal account.
-- Let authenticated users publish short posts.
-- Support quick interaction with posts and comments through likes.
-- Enable users to follow and unfollow others.
-- Display profile pages with user information and posts.
-- Support search for users by username or name.
-- Provide a lightweight social feed with latest and following post views.
+- Let users register and log in securely using a username and password flow.
+- Allow signed-in users to create short posts and interact with them.
+- Support likes, follows, search, notifications, and profile discovery.
+- Maintain responsive, modern UI behavior with Material UI and a shared app shell.
+- Use React Query to manage server state and optimistic updates across feeds and profiles.
 
-## 3. Target Users
+## 3. Target Audience
 
-- General users who want a simple personal social feed.
-- Users looking for a minimal social-network experience without complex features.
-- Single-user or demo environment audience for frontend testing against a backend API.
+- Users who want a minimal social network experience.
+- Demo audiences or API integration testing environments.
+- Frontend developers validating social app workflows against a backend service.
 
 ## 4. Core Features
 
 ### 4.1 Authentication
 
-- Register account with name, username, bio, and password
-- Log in with username and password
-- Verify user session using a token stored in localStorage
-- Store auth state in app-wide context
-- Logout from the drawer menu
+- Register a user with name, username, bio, and password.
+- Log in with username and password.
+- Persist the JWT token in localStorage.
+- Verify the active session through a backend endpoint.
+- Store auth state in a shared app context.
+- Log out from the app drawer.
 
 ### 4.2 Feed
 
-- Home page shows a list of posts
-- Toggle between “Latest” and “Following” feeds when authenticated
-- Display post content, created time, author, likes, and comments
-- Show a post form when the user is logged in and the form toggle is enabled
+- Display a home feed of posts.
+- Switch between Latest and Following views when authenticated.
+- Render post metadata such as author, creation time, likes, and comments.
+- Show a post composer when the user is logged in.
 
 ### 4.3 Posts
 
-- Create a new post with text content
-- Delete a post only if it belongs to the current authenticated user
-- Update cache optimistically using React Query
-- Support post removal success and error toast messaging
+- Create a new post with text content.
+- Delete a post owned by the current user.
+- Use React Query cache updates after mutation events.
+- Show success or error notification states.
 
 ### 4.4 Comments
 
-- View all comments associated with a post
-- Add a new reply comment to a post
-- Delete comments authored by the current user
-- Show comment metadata such as author name and relative time
+- View comments attached to a post.
+- Create new comments.
+- Delete comments authored by the current user.
+- Display relative timestamps and author information.
 
 ### 4.5 Likes
 
-- Like and unlike both posts and comments
-- View a list of users who liked a specific post or comment
-- Display like counts in the UI
+- Like and unlike posts and comments.
+- Show counts per item.
+- Navigate to a dedicated likes page to view users who interacted with a post or comment.
 
 ### 4.6 Follow System
 
-- Follow or unfollow another user from profile or search results
-- Show follow buttons conditionally based on auth state
-- Refresh related query results after follow state changes
+- Follow or unfollow other users from search results or profiles.
+- Hide or adjust follow actions based on auth state.
+- Refresh relevant queries after follow state changes.
 
 ### 4.7 Profile
 
-- View a user profile page with username, bio, banner, and avatar area
-- Browse a user’s posts from the profile page
-- Follow user from the profile page
+- View profile data such as username, bio, and account details.
+- Browse posts associated with a selected user.
+- Trigger follow or unfollow actions from the profile page.
 
 ### 4.8 Search
 
-- Search for users by query term
-- Debounced search input to reduce API calls
-- Display matching user cards with follow buttons
+- Search users via query input.
+- Render matching users with follow controls.
+- Keep the search interaction lightweight and responsive.
 
-### 4.9 Theme and Layout
+### 4.9 Notifications
 
-- Dark and light mode toggle in the header
-- Global app layout with header, drawer navigation, and snackbar notification
-- MUI-based responsive design for consistent UI styling
+- Fetch notifications for the current user.
+- Mark notifications as read.
+- Receive live updates via WebSocket and invalidate related queries.
+
+### 4.10 Theme and Layout
+
+- Toggle between dark and light mode.
+- Use a global layout with header, drawer navigation, and snackbar notifications.
+- Maintain a responsive UI pattern across devices.
 
 ## 5. User Flows
 
-### 5.1 New User Registration
+### 5.1 Registration
 
-1. User opens Register page.
-2. User enters name, username, bio, and password.
-3. Frontend sends POST request to the backend users endpoint.
-4. On success, user is redirected to the login page.
-5. A global success message is shown.
+1. User visits the Register screen.
+2. User submits name, username, bio, and password.
+3. Frontend sends a POST request to the backend users endpoint.
+4. The user is redirected to the login page after success.
+5. A global confirmation message is displayed.
 
 ### 5.2 Login
 
-1. User opens Login page.
-2. User enters username and password.
-3. Frontend sends authentication request.
-4. Backend returns a JWT token and user payload.
-5. Token is stored in localStorage.
-6. Auth state updates globally.
-7. User is redirected to the home feed.
+1. User enters username and password.
+2. Frontend requests a session token.
+3. Backend returns a JWT and user payload.
+4. Token is stored in localStorage.
+5. App auth state updates.
+6. User is redirected to the home feed.
 
 ### 5.3 Create Post
 
-1. Logged-in user opens the add-post form using the header button.
+1. Authenticated user opens the new-post form.
 2. User enters text and submits the form.
-3. Post is sent to the backend.
-4. Query cache updates to show the new post at the top of the feed.
+3. Request is sent to the backend.
+4. Feed cache refreshes to display the new post.
 
 ### 5.4 View Likes
 
-1. User clicks the likes counter on a post or comment.
-2. App navigates to the likes page.
-3. The page fetches users who liked that item.
-4. User list renders with follow actions.
+1. User taps the likes count from a post or comment.
+2. App navigates to the likes route.
+3. The page requests the associated users.
+4. Matching user results are shown with follow actions.
 
-### 5.5 Follow Another User
+### 5.5 Follow User
 
 1. User opens a profile or search result.
 2. User clicks Follow or Following.
-3. Mutation updates backend follow state.
-4. Related React Query caches are invalidated.
+3. Mutation updates backend state.
+4. Related query keys are invalidated and refreshed.
 
 ## 6. Route Structure
 
-The app uses a browser router with a shared template wrapper.
+The app uses a browser router with a shared template shell.
 
-- / -> Home
+- / -> Home feed
 - /login -> Login
 - /register -> Register
-- /comments/:id -> Comments page for a specific post
+- /comments/:id -> Post comments
 - /profile/:id -> User profile
-- /likes/:id/:type -> Likes list for a post or comment
+- /likes/:id/:type -> Like list for a post or comment
 - /search -> User search
+- /notis -> Notifications
 
 ## 7. Architecture
 
@@ -147,49 +152,44 @@ The app uses a browser router with a shared template wrapper.
 - React Router DOM
 - TanStack React Query
 - date-fns
+- react-use-websocket
 
 ### 7.2 State Management
 
-The app uses a combination of:
+The app combines several state systems:
 
-- React Context for app-level data such as auth, theme mode, drawer state, and notifications
-- React Query for server state and cache management
-- LocalStorage for persistent token and theme preference
+- React Context for app-wide auth, theme, notification, and drawer state.
+- React Query for server state and cache synchronization.
+- LocalStorage for token persistence and theme preference.
+- WebSocket updates for real-time invalidation events.
 
-### 7.3 Global Context
+### 7.3 Shared Context
 
-App context contains:
+The app context is designed to manage:
 
-- showForm
-- setShowForm
-- mode and setMode
-- showDrawer and setShowDrawer
-- globalMsg and setGlobalMsg
-- auth and setAuth
+- showForm / setShowForm
+- mode / setMode
+- showDrawer / setShowDrawer
+- globalMsg / setGlobalMsg
+- auth / setAuth
 
-## 8. API Interaction Layer
+## 8. API Integration
 
-The project centralizes backend communication in [src/lib/fetcher.ts](src/lib/fetcher.ts).
+Backend communication is centralized in [src/lib/fetcher.ts](src/lib/fetcher.ts).
 
-Key behaviors:
+Behavior includes:
 
-- Reads token from localStorage
-- Adds Authorization header when a token exists
-- Converts unsuccessful responses into JavaScript Error objects
-- Exposes functions for:
-  - users: register, login, verify, fetch user, search
-  - posts: list, create, delete, follow-feed
-  - comments: create, delete
-  - likes: create, delete, fetch liked users
-  - follows: follow and unfollow
+- Reading the JWT from localStorage.
+- Adding Authorization headers when a token exists.
+- Converting failed backend responses into JavaScript Error objects.
+- Exposing typed functions for user, post, comment, like, follow, and notification operations.
 
-### Environment Variable
+### Environment Variables
 
-The app expects a Vite environment variable:
+The app expects the following Vite variables:
 
-- VITE_API
-
-This is used as the base API URL for all backend requests.
+- VITE_API: Base API URL
+- VITE_WS: WebSocket subscription URL
 
 ## 9. Data Model
 
@@ -227,27 +227,28 @@ This is used as the base API URL for all backend requests.
 - PostLike: userId, postId, user
 - CommentLike: userId, commentId, user
 
-## 10. UI Component Structure
+## 10. UI Component Map
 
-Key interface components include:
+Key interface pieces include:
 
-- Header: app header with menu, add-post trigger, search, theme toggle
-- AppDrawer: side navigation and auth actions
-- Template: global layout shell with snackbar and outlet rendering
-- Item: presentation of a post card
-- Comment: comment card with like action and delete action
-- Form: textarea form for new posts
-- FollowButton: follow/unfollow button
-- LikeButton: like/unlike button + count display
-- UserList: list of users for likes or search result pages
-- Loading: loading state indicator
+- Header: menu, add-post trigger, search, and theme toggle
+- AppDrawer: navigation and auth actions
+- Template: global layout with outlet rendering
+- Item: social post card
+- Comment: comment display and actions
+- Form: new post composer
+- FollowButton: follow/unfollow interaction
+- LikeButton: like toggle and count display
+- UserList: user search and likes pages
+- Loading: loading indicator
 
-## 11. Current Constraints and Observations
+## 11. Current Constraints and Notes
 
-- The project is frontend-focused; the backend API is assumed to exist externally.
-- Some API methods do not explicitly return the result of delete operations, which is a potential bug or implementation inconsistency.
-- The app relies heavily on optimistic cache updates and invalidation patterns.
-- Several screens assume backend responses contain specific fields such as user, likes, and follow relationships.
+- This project assumes an external backend API exists.
+- Some delete operations may not return payload data consistently, which can require cache handling adjustments.
+- The app relies heavily on query invalidation and optimistic UI updates.
+- Several pages expect backend responses to include user, like, and follow relationship data in a consistent shape.
+- Notification events are connected through WebSocket-driven invalidation rather than page-local state alone.
 - The project uses browser localStorage for auth persistence, which is suitable for a demo but not ideal for sensitive production authentication flows.
 
 ## 12. Non-Functional Requirements
