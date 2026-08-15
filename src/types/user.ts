@@ -7,7 +7,7 @@ export interface User {
   name: string;
   username: string;
   bio?: string;
-  follower?: Follow[];
+  followers?: Follow[];
   following?: Follow[];
   posts?: Post[];
   comments?: Comment[];

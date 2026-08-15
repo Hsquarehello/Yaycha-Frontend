@@ -74,6 +74,8 @@ export default function Profile() {
     return <Loading message="Loading data..." />;
   }
 
+  const followersCount = user?.followers?.length ?? 0;
+  const followingCount = user?.following?.length ?? 0;
   return (
     <Box>
       {/* Profile Cover Banner */}
@@ -96,6 +98,32 @@ export default function Profile() {
           <Typography sx={{ fontSize: "0.8em", color: "text.fade" }}>
             {user?.bio}
           </Typography>
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 3,
+              my: 1.5,
+            }}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                {followersCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Followers
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                {followingCount}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Following
+              </Typography>
+            </Box>
+          </Box>
+
           <Box>{user && <FollowButton user={user} />}</Box>
         </Box>
       </Box>

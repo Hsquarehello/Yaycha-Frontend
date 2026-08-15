@@ -10,6 +10,7 @@ import {
   Favorite as FavoriteIcon,
   Comment as CommentIcon,
   PersonAdd as PersonAddIcon,
+  Article as PostIcon,
 } from "@mui/icons-material";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,8 @@ export default function NotiItem({ noti, readNoti }: NotiItemParams) {
         return <FavoriteIcon color="error" />;
       case "follow":
         return <PersonAddIcon color="primary" />;
+      case "new_post":
+        return <PostIcon color="info" />;
       default:
         return <CommentIcon color="action" />;
     }

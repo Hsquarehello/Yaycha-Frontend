@@ -1,6 +1,6 @@
 export interface Noti {
   id: number;
-  type: "comment" | "like" | "likeComment" | "follow";
+  type: "comment" | "like" | "likeComment" | "follow" | "new_post";
   content: string;
   userId: number;
   postId?: number;

@@ -34,7 +34,7 @@ export default function FollowButton({ user }: FollowButtonProps) {
   if (!auth || auth.id === user.id) return <></>;
 
   const isFollowing = Boolean(
-    user.following?.some((item) => item.followerId === auth.id),
+    user.followers?.some((item) => item.followerId === auth.id),
   );
 
   const isPending = follow.isPending || unfollow.isPending;
